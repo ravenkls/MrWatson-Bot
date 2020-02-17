@@ -5,7 +5,7 @@ import logging
 import os
 
 
-class Bot(commabds.Bot):
+class Bot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.database = Database()
