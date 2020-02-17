@@ -185,8 +185,7 @@ class Helpers(commands.Cog):
                 amount = int(amount)
 
                 if args[0].lower() == "set":
-                    self.bot.database.set_reps(member, amount)
-                    new_points = amount
+                    new_points = self.bot.database.set_reps(member, amount)
                 elif args[0].lower() == "remove":
                     new_points = self.bot.database.add_rep(member, amount=-amount)
                 elif args[0].lower() == "add":
