@@ -111,7 +111,7 @@ class General(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        game = discord.Activity(name='the server', type=discord.ActivityType.watching)
+        game = discord.Activity(name="the server", type=discord.ActivityType.watching)
         await self.bot.change_presence(activity=game)
 
 
@@ -123,9 +123,20 @@ class Helpers(commands.Cog):
     @commands.command()
     async def rep(self, ctx, member: discord.Member):
         """Add a reputation point to a member."""
-        reps = self.bot.database.add_rep(member)
-        await ctx.send(f'{member} now has {reps} reps')
+        print(ctx.channel)
+        if member.bot:
+            raise Exception("You can't rep a bot!")
+        elif member == ctx.author:
+            raise Exception("You can't rep yourself!")
 
+        reps = self.bot.database.add_rep(member)
+        embed = discord.Embed(description=f"✅ **{member.mention}** now has `{reps}` reputation points!", colour=EMBED_ACCENT_COLOUR)
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def leaderboard(self, ctx):
+        """View the reputation points leaderboard."""
+        leaderboard = self.bot.database.get_top_reps()
 
 def setup(bot):
     bot.add_cog(General(bot))
