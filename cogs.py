@@ -3,7 +3,7 @@ import inspect
 import discord
 from discord.ext import commands
 
-from .settings import *
+from settings import *
 
 
 class General(commands.Cog):
