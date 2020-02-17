@@ -170,28 +170,29 @@ class Helpers(commands.Cog):
         -reps add <member> <amount>
         -reps clear"""
         if query is not None:
-            args = query.split(" ")
-            if query[0] in ["set", "remove", "add"]:
+            args = query.split()
+            print(args)
+            if query[0].strip() in ["set", "remove", "add"]:
                 if len(query) != 3:
                     raise Exception("Invalid options.")
-                member = ctx.guild.get_member_named(self.query[1])
+                member = ctx.guild.get_member_named(self.query[1].strip())
                 if not member:
                     raise Exception("Member not found")
-                amount = query[2]
+                amount = query[2].strip()
                 if not amount.isdigit():
                     raise Exception("Amount must be an integer")
                 amount = int(amount)
 
-                if query[0] == "set":
+                if query[0].strip() == "set":
                     self.bot.database.set_reps(member, amount)
                     new_points = amount
-                elif query[0] == "remove":
+                elif query[0].strip() == "remove":
                     new_points = self.bot.database.add_rep(member, amount=-amount)
-                elif query[0] == "add":
+                elif query[0].strip() == "add":
                     new_points = self.bot.database.add_rep(member, amount=amount)
                         
                 await ctx.send(f"✅ **{member}** now has `{new_points}` reputation points!")
-            else:
+            elif query[0].strip() == "clear":
                 await self.remove_all_reps(ctx)  
 
     async def remove_all_reps(self, ctx):
