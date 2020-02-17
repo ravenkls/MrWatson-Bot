@@ -122,7 +122,7 @@ class General(commands.Cog):
         await self.bot.change_presence(activity=game)
 
 
-class Helpers(commands.Cog):
+class Watson(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -215,7 +215,20 @@ class Helpers(commands.Cog):
                                            f"\nThis action was carried out by {ctx.author} (`{ctx.author.id}`)")
         finally:
             await temp.delete()
+    
+    @commands.command()
+    async def googleit(self, ctx, member: discord.Member):
+        """Run this command and chaos will ensue."""
+        messages = []
+        for channel in ctx.guild.channels:
+            if isinstance(channel, discord.TextChannel):
+                msg = await channel.send(member.mention)
+                messages.append(msg)
+        
+        await asyncio.sleep(5)
+        for m in messages:
+            await m.delete()
 
 def setup(bot):
     bot.add_cog(General(bot))
-    bot.add_cog(Helpers(bot))
+    bot.add_cog(Watson(bot))
