@@ -368,6 +368,7 @@ class Moderation(commands.Cog):
                         minutes = int(t[:-1])
                 total_time = datetime.timedelta(days=7*weeks + days, hours=hours, minutes=minutes)
                 expiry_time = time.time() + total_time.total_seconds()
+                self.bot.database.new_punishment(member, self.BAN, expiry_time)
 
         await ctx.guild.ban(member, reason=reason)
         await ctx.send(f"✅ {member} has been permanently banned. Reason: {reason}")
