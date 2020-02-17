@@ -238,14 +238,14 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
-    async def warn(self, member: discord.Member, *, reason: str="None"):
+    async def warn(self, ctx, member: discord.Member, *, reason: str="None"):
         """Warn a member of the server."""
         self.bot.database.add_warning(member, ctx.author, reason)
         await ctx.send(f"⚠️ {member.mention} has been warned. Reason: {reason}")
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
-    async def warnings(self, member: discord.Member):
+    async def warnings(self, ctx, member: discord.Member):
         """Retrieve all the warnings that a user has been given."""
         warnings = self.bot.database.get_warnings(member)
         if warnings:
@@ -265,6 +265,7 @@ class Moderation(commands.Cog):
             await ctx.send(embed=embed)
         else:
             await ctx.send(f"{member} has no previous warnings.")
+
 
 
 def setup(bot):
