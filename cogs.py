@@ -351,7 +351,7 @@ class Moderation(commands.Cog):
             reason_split = reason.split("-t")
             reason = reason_split[0]
             if len(reason) > 1:
-                time_flag = reason[1]
+                time_flag = reason_split[1]
                 print(time_flag)
                 times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', time_flag)
 
