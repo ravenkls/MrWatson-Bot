@@ -173,8 +173,6 @@ class Helpers(commands.Cog):
             response = await self.bot.wait_for("message", check=check, timeout=10)
         except asyncio.TimeoutError:
             return
-        finally:
-            await temp.delete()
         else:
             self.bot.database.clear_reputations()
             await response.delete()
@@ -182,7 +180,8 @@ class Helpers(commands.Cog):
             if ctx.author != ctx.guild.owner:
                 await ctx.guild.owner.send("**Notice:** All reputation points have been cleared from the server\n"
                                            f"\nThis action was carried out by {ctx.author} (`{ctx.author.id}`)")
-
+        finally:
+            await temp.delete()
 
 def setup(bot):
     bot.add_cog(General(bot))
