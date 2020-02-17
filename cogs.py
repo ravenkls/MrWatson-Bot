@@ -203,6 +203,7 @@ class Moderation(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.check_expired_punishments.start()
 
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
@@ -351,6 +352,7 @@ class Moderation(commands.Cog):
             reason = reason_split[0]
             if len(reason) > 1:
                 time_flag = reason[1]
+                print(time_flag)
                 times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', time_flag)
 
                 weeks = 0
@@ -370,7 +372,7 @@ class Moderation(commands.Cog):
                 expiry_time = time.time() + total_time.total_seconds()
                 self.bot.database.new_punishment(member, self.BAN, expiry_time)
 
-        await ctx.guild.ban(member, reason=reason)
+        #await ctx.guild.ban(member, reason=reason)
         await ctx.send(f"✅ {member} has been permanently banned. Reason: {reason}")
     
     @commands.command()
