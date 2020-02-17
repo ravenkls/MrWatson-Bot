@@ -97,6 +97,8 @@ class General(commands.Cog):
     async def on_command_error(self, ctx, exception):
         if type(exception) == discord.ext.commands.errors.CommandNotFound:
             return
+        if type(exception) == discord.ext.commands.errors.CheckFailure:
+            return
         error_embed = discord.Embed(colour=0xFF0000)
         if type(exception) == discord.ext.commands.errors.MissingRequiredArgument:
             arg = str(exception).split()[0]
@@ -109,7 +111,7 @@ class General(commands.Cog):
             error_embed.set_footer(text=str(exception))
         else:
             error_embed.title = "Error"
-            error_embed.description = "`" + str(exception) + "`"
+            error_embed.description = "`" + str(exception).split(":")[-1] + "`"
         if error_embed.description is not None:
             return await ctx.send(embed=error_embed)
 
