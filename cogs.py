@@ -278,7 +278,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
-    async def removewarning(self, ctx, member: discord.Member, warning_id: int)
+    async def removewarning(self, ctx, member: discord.Member, warning_id: int):
         """Remove a warning given the warning ID. (See user warning list for warning IDs)."""
         warnings = self.bot.database.get_warnings(member)
 
