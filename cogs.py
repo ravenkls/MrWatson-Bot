@@ -352,9 +352,8 @@ class Moderation(commands.Cog):
 
         if reason:
             reason_split = reason.strip().split("-t")
-            print(reason_split)
             reason = reason_split[0]
-            if len(reason) > 1:
+            if len(reason_split) > 1:
                 time_flag = reason_split[1]
                 times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', time_flag)
 
@@ -374,9 +373,9 @@ class Moderation(commands.Cog):
                 total_time = datetime.timedelta(days=7*weeks + days, hours=hours, minutes=minutes)
                 expiry_time = time.time() + total_time.total_seconds()
 
-        #await ctx.guild.ban(member, reason=reason)
+        await ctx.guild.ban(member, reason=reason)
         if expiry_time >= 0:
-            #self.bot.database.new_punishment(member, self.BAN, expiry_time)
+            self.bot.database.new_punishment(member, self.BAN, expiry_time)
             await ctx.send(f"✅ {member} has been banned for {str(total_time)}. Reason: {reason}")
         else:
             await ctx.send(f"✅ {member} has been permanently banned. Reason: {reason}")
