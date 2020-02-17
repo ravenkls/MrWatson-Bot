@@ -171,10 +171,8 @@ class Helpers(commands.Cog):
         -reps clear"""
         if query is not None:
             args = [a.strip().lower() for a in query.split()]
-            print(args)
             if args[0] in ["set", "remove", "add"]:
-                print("OK")
-                if len(query) != 3:
+                if len(args) != 3:
                     raise Exception("Invalid options.")
                 member = ctx.guild.get_member_named(args[1])
                 if not member:
@@ -185,7 +183,6 @@ class Helpers(commands.Cog):
                 amount = int(amount)
 
                 if args[0] == "set":
-                    print("OK")
                     self.bot.database.set_reps(member, amount)
                     new_points = amount
                 elif args[0] == "remove":
