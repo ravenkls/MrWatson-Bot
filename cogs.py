@@ -1,5 +1,6 @@
 import inspect
 import asyncio
+import datetime
 
 import discord
 from discord.ext import commands
@@ -158,8 +159,48 @@ class Watson(commands.Cog):
             if member:
                 embed.add_field(name=str(member), value=points, inline=False)
         await ctx.send(embed=embed)
+
+    async def remove_all_reps(self, ctx):
+        temp = await ctx.send("⛔ **You are about to completely remove all reputation points from everyone in the server**\n"
+                              "\nTo confirm this action, please type `confirm` within the next 10 seconds.")
         
+        def check(m):
+            return m.content == "confirm" and m.author == ctx.author and m.channel == ctx.channel
+        
+        try:
+            response = await self.bot.wait_for("message", check=check, timeout=10)
+        except asyncio.TimeoutError:
+            return
+        else:
+            self.bot.database.clear_reputations()
+            await response.delete()
+            await ctx.send("✅ All reputation points have been cleared.")
+            if ctx.author != ctx.guild.owner:
+                await ctx.guild.owner.send("**Notice:** All reputation points have been cleared from the server\n"
+                                           f"\nThis action was carried out by {ctx.author} (`{ctx.author.id}`)")
+        finally:
+            await temp.delete()
+    
     @commands.command(hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def googleit(self, ctx, member: discord.Member):
+        """Run this command and chaos will ensue."""
+        messages = []
+        for channel in ctx.guild.channels:
+            if isinstance(channel, discord.TextChannel):
+                msg = await channel.send(member.mention)
+                messages.append(msg)
+        
+        await asyncio.sleep(5)
+        for m in messages:
+            await m.delete()
+            
+
+class Moderation(commands.Cog):
+
+    def __init__(self, bot):
+        self.bot = bot
+
     @commands.has_permissions(administrator=True)
     async def reps(self, ctx, *, query: str=None):
         """Configure the reputation points. (Admin only)
@@ -195,40 +236,38 @@ class Watson(commands.Cog):
             elif args[0].lower() == "clear":
                 await self.remove_all_reps(ctx)  
 
-    async def remove_all_reps(self, ctx):
-        temp = await ctx.send("⛔ **You are about to completely remove all reputation points from everyone in the server**\n"
-                              "\nTo confirm this action, please type `confirm` within the next 10 seconds.")
-        
-        def check(m):
-            return m.content == "confirm" and m.author == ctx.author and m.channel == ctx.channel
-        
-        try:
-            response = await self.bot.wait_for("message", check=check, timeout=10)
-        except asyncio.TimeoutError:
-            return
-        else:
-            self.bot.database.clear_reputations()
-            await response.delete()
-            await ctx.send("✅ All reputation points have been cleared.")
-            if ctx.author != ctx.guild.owner:
-                await ctx.guild.owner.send("**Notice:** All reputation points have been cleared from the server\n"
-                                           f"\nThis action was carried out by {ctx.author} (`{ctx.author.id}`)")
-        finally:
-            await temp.delete()
-    
     @commands.command()
-    async def googleit(self, ctx, member: discord.Member):
-        """Run this command and chaos will ensue."""
-        messages = []
-        for channel in ctx.guild.channels:
-            if isinstance(channel, discord.TextChannel):
-                msg = await channel.send(member.mention)
-                messages.append(msg)
-        
-        await asyncio.sleep(5)
-        for m in messages:
-            await m.delete()
+    @commands.has_permissions(kick_members=True)
+    async def warn(self, member: discord.Member, *, reason: str="None"):
+        """Warn a member of the server."""
+        self.bot.database.add_warning(member, ctx.author, reason)
+        await ctx.send(f"⚠️ {member.mention} has been warned. Reason: {reason}")
+
+    @commands.command()
+    @commands.has_permissions(kick_members=True)
+    async def warnings(self, member: discord.Member):
+        """Retrieve all the warnings that a user has been given."""
+        warnings = self.bot.database.get_warnings(member)
+        if warnings:
+            last_warning = warnings[0]
+            last_warning_time = datetime.datetime.fromtimestamp(last_warning[2]).strftime("%d %B %Y")
+            embed = discord.Embed(title="List of previously given warnings",
+                                  colour=0xd0021b, 
+                                  description=f"{member} has `{len(warnings)}` warnings.\n"
+                                              f"Their last warning was given on {last_warning_time}")
+            embed.set_thumbnail(url=member.avatar_url_as(format='png', static_format='png'))
+            embed.set_author(name=str(member), icon_url=member.avatar_url_as(format='png', static_format='png'))
+            for author_id, reason, timestamp in warnings:
+                date = datetime.datetime.fromtimestamp(last_warning[2])
+                embed.add_field(name=date.strftime("%d %B %Y"),
+                                value=f"Reason: {reason}\n"
+                                      f"Given by: {ctx.get_member(author_id)}", inline=True)
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"{member} has no previous warnings.")
+
 
 def setup(bot):
     bot.add_cog(General(bot))
     bot.add_cog(Watson(bot))
+    bot.add_cog(Moderation(bot))
