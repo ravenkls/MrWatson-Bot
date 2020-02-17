@@ -48,3 +48,8 @@ class Database:
         self.cursor.execute("SELECT * FROM reputation_points ORDER BY points DESC LIMIT %s;",
                             (amount,))
         return self.cursor.fetchall()
+    
+    def clear_reputations(self):
+        """Remove all reputations from the table."""
+        self.cursor.execute("DELETE FROM reputation_points;")
+        self.conn.commit()

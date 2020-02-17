@@ -1,4 +1,5 @@
 import inspect
+import asyncio
 
 import discord
 from discord.ext import commands
@@ -139,6 +140,14 @@ class Helpers(commands.Cog):
         await ctx.send(f"✅ **{member.mention}** now has `{reps}` reputation points!")
 
     @commands.command()
+    async def repcount(self, ctx, member: discord.Member=None):
+        """View how many reputation points a user has."""
+        if member is None:
+            member = ctx.author
+        rep_count = self.bot.database.get_reps(member)
+        await ctx.send(f"{member} has `{rep_count}` reputation points.")
+
+    @commands.command()
     async def leaderboard(self, ctx):
         """View the reputation points leaderboard."""
         leaderboard = self.bot.database.get_top_reps()
@@ -150,6 +159,30 @@ class Helpers(commands.Cog):
                 embed.add_field(name=str(member), value=points, inline=False)
         await ctx.send(embed=embed)
         
+    @commands.command(hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def resetreps(self, ctx):
+        """Resets all the reputation points!"""
+        temp = await ctx.send("⛔ **You are about to completely remove all reputation points from everyone in the server**\n"
+                              "\nTo confirm this action, please type `confirm` within the next 10 seconds.")
+        
+        def check(m):
+            return m.content == "confirm" and m.author == ctx.author and m.channel == ctx.channel
+        
+        try:
+            response = await self.bot.wait_for("message", check=check, timeout=10)
+        except asyncio.TimeoutError:
+            return
+        finally:
+            await temp.delete()
+        else:
+            self.bot.database.clear_reputations()
+            await response.delete()
+            await ctx.send("✅ All reputation points have been cleared.")
+            if ctx.author != ctx.guild.owner:
+                await ctx.guild.owner.send("**Notice:** All reputation points have been cleared from the server\n"
+                                           f"\nThis action was carried out by {ctx.author} (`{ctx.author.id}`)")
+
 
 def setup(bot):
     bot.add_cog(General(bot))
