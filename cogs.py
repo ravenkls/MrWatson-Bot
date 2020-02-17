@@ -391,7 +391,7 @@ class Moderation(commands.Cog):
             if punishment_type == self.BAN:
                 bans = await guild.bans()
                 for b in bans:
-                    if b.user == member_id:
+                    if b.user.id == member_id:
                         await guild.unban(b.user)
                         break
             elif punishment_type == self.MUTE:
