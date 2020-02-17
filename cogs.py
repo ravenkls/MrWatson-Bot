@@ -281,7 +281,9 @@ class Moderation(commands.Cog):
     async def removewarning(self, ctx, member: discord.Member, warning_id: int):
         """Remove a warning given the warning ID. (See user warning list for warning IDs)."""
         warnings = self.bot.database.get_warnings(member)
-
+        if warning_id < 1:
+            await ctx.send(f"There is no warning with the ID {warning_id}")
+            return
         try:
             warning = warnings[warning_id-1]
         except IndexError:
@@ -290,7 +292,7 @@ class Moderation(commands.Cog):
             author_id, reason, timestamp = warning
             self.bot.database.remove_warning(member, timestamp)
             await ctx.send(f"✅ The warning given to {member} by {ctx.guild.get_member(author_id)} "
-                            "for reason: \"{reason}\" has been removed.")
+                           f"for reason: \"{reason}\" has been removed.")
 
 def setup(bot):
     bot.add_cog(General(bot))
