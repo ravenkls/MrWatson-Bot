@@ -344,15 +344,17 @@ class Moderation(commands.Cog):
         -ban Member#4209 -t 1w
         -ban Member#4209
         """
+        expiry_time = -1
+
         if ctx.author.top_role <= member.top_role:
             await ctx.send("You cannot ban this user.")
             return
+
         if reason:
             reason_split = reason.split("-t")
             reason = reason_split[0]
             if len(reason) > 1:
                 time_flag = reason_split[1]
-                print(time_flag)
                 times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', time_flag)
 
                 weeks = 0
@@ -370,10 +372,13 @@ class Moderation(commands.Cog):
                         minutes = int(t[:-1])
                 total_time = datetime.timedelta(days=7*weeks + days, hours=hours, minutes=minutes)
                 expiry_time = time.time() + total_time.total_seconds()
-                self.bot.database.new_punishment(member, self.BAN, expiry_time)
 
-        #await ctx.guild.ban(member, reason=reason)
-        await ctx.send(f"✅ {member} has been permanently banned. Reason: {reason}")
+        await ctx.guild.ban(member, reason=reason)
+        if expiry_time >= 0:
+            self.bot.database.new_punishment(member, self.BAN, expiry_time)
+            await ctx.send(f"✅ {member} has been banned for {str(total_time)}. Reason: {reason}")
+        else:
+            await ctx.send(f"✅ {member} has been permanently banned. Reason: {reason}")
     
     @commands.command()
     @commands.guild_only()
