@@ -23,23 +23,21 @@ class Database:
 
         if points:
             new_points = points + amount
-            if new_points > 100000000:
-                new_points = 100000000
-            self.set_reps(member, new_points)
+            result = self.set_reps(member, new_points)
         else:
             new_points = amount
-            if new_points > 100000000:
-                new_points = 100000000
-            self.set_reps(member, new_points)
+            result = self.set_reps(member, new_points)
         self.conn.commit()
 
-        return new_points
+        return result
     
     def set_reps(self, member, amount):
         """Set the reps for a member to a specific value."""
         points = self.get_reps(member)
         if amount > 100000000:
             amount = 100000000
+        if amount < 0:
+            amount = 0
         if points:
             if amount != 0:
                 self.cursor.execute("UPDATE reputation_points SET points=%s WHERE member_id=%s;", 
