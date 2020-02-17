@@ -1,5 +1,6 @@
 import psycopg2
 from settings import DATABASE_URL
+import time
 import os
 
 
