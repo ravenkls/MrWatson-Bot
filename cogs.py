@@ -1,15 +1,13 @@
 import inspect
 import asyncio
 import datetime
+import re
+import time
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from settings import *
-
-
-def server_channel(ctx):
-    return not isinstance(ctx.channel, discord.DMChannel)
 
 
 class General(commands.Cog):
@@ -129,7 +127,7 @@ class Watson(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.check(server_channel)
+    @commands.guild_only()
     async def rep(self, ctx, member: discord.Member):
         """Add a reputation point to a member."""
         if member.bot:
@@ -141,6 +139,7 @@ class Watson(commands.Cog):
         await ctx.send(f"✅ **{member.mention}** now has `{reps}` reputation points!")
 
     @commands.command()
+    @commands.guild_only()
     async def repcount(self, ctx, member: discord.Member=None):
         """View how many reputation points a user has."""
         if member is None:
@@ -182,6 +181,7 @@ class Watson(commands.Cog):
             await temp.delete()
     
     @commands.command(hidden=True)
+    @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def googleit(self, ctx, member: discord.Member):
         """Run this command and chaos will ensue."""
@@ -198,10 +198,14 @@ class Watson(commands.Cog):
 
 class Moderation(commands.Cog):
 
+    BAN = "b"
+    MUTE = "m"
+
     def __init__(self, bot):
         self.bot = bot
 
     @commands.has_permissions(administrator=True)
+    @commands.guild_only()
     async def reps(self, ctx, *, query: str=None):
         """Configure the reputation points. (Admin only)
         
@@ -237,14 +241,19 @@ class Moderation(commands.Cog):
                 await self.remove_all_reps(ctx)  
 
     @commands.command()
+    @commands.guild_only()
     @commands.has_permissions(kick_members=True)
     async def warn(self, ctx, member: discord.Member, *, reason: str="None"):
         """Warn a member of the server."""
+        if ctx.author.top_role <= member.top_role:
+            await ctx.send("You cannot warn this user.")
+            return
         self.bot.database.add_warning(member, ctx.author, reason)
         await ctx.send(f"⚠️ {member.mention} has been warned. Reason: {reason}")
         await member.send(f"⚠️ You have been warned by {ctx.author}. Reason: {reason}")
 
     @commands.command()
+    @commands.guild_only()
     @commands.has_permissions(kick_members=True)
     async def warnings(self, ctx, member: discord.Member, page: int=1):
         """Retrieve all the warnings that a user has been given."""
@@ -277,6 +286,7 @@ class Moderation(commands.Cog):
             await ctx.send(f"{member} has no previous warnings.")
 
     @commands.command()
+    @commands.guild_only()
     @commands.has_permissions(kick_members=True)
     async def removewarning(self, ctx, member: discord.Member, warning_id: int):
         """Remove a warning given the warning ID. (See user warning list for warning IDs)."""
@@ -293,6 +303,99 @@ class Moderation(commands.Cog):
             self.bot.database.remove_warning(member, timestamp)
             await ctx.send(f"✅ The warning given to {member} by {ctx.guild.get_member(author_id)} "
                            f"for reason: \"{reason}\" has been removed.")
+
+    @commands.command(aliases=["vckick"])
+    @commands.guild_only()
+    @commands.has_permissions(kick_members=True)
+    async def voicekick(self, ctx, member: discord.Member, *, reason: str="None"):
+        """Kick a member from voice chat."""
+        if member.voice is not None:
+            if ctx.author.top_role <= member.top_role:
+                await ctx.send("You cannot kick this user from voice.")
+                return
+            kick_channel = await ctx.guild.create_voice_channel(name=self.bot.user.name)
+            await member.move_to(kick_channel)
+            await kick_channel.delete()
+            await ctx.send("{0.name} has been kicked from voice".format(member))
+        else:
+            await ctx.send("{0.name} is not in a voice channel".format(member))
+
+    @commands.command(aliases=["clear", "clean", "cls"])
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    async def purge(self, ctx, limit=100, member: discord.Member=None):
+        """Remove messages from a channel."""
+        if member is not None:
+            await ctx.channel.purge(limit=limit, check=lambda m: m.author is member)
+        else:
+            await ctx.channel.purge(limit=limit)
+        completed = await ctx.send(":ok_hand:")
+        await asyncio.sleep(2)
+        await completed.delete()
+
+    @commands.command()
+    @commands.guild_only()
+    async def ban(self, ctx, member: discord.Member, *, reason="None", flags=None):
+        """Ban a member from the server, to make the ban temporary, add the `-t` flag to the end.
+        Usage examples:
+        -ban Member#4209 breaking rules -t 2d
+        -ban Member#4209 being stupid
+        -ban Member#4209 -t 1w
+        -ban Member#4209
+        """
+        if ctx.author.top_role <= member.top_role:
+            await ctx.send("You cannot ban this user.")
+            return
+        if reason:
+            reason_split = reason.split("-t")
+            reason = reason_split[0]
+            if len(reason) > 1:
+                time_flag = reason[1]
+                times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', time_flag)
+
+                weeks = 0
+                days = 0
+                hours = 0
+                minutes = 0
+                for t in times:
+                    if t.endswith('w'):
+                        weeks = int(t[:-1])
+                    elif t.endswith('d'):
+                        days = int(t[:-1])
+                    elif t.endswith('h'):
+                        hours = int(t[:-1])
+                    elif t.endswith('m'):
+                        minutes = int(t[:-1])
+                total_time = datetime.timedelta(days=7*weeks + days, hours=hours, minutes=minutes)
+                expiry_time = time.time() + total_time.total_seconds
+
+        await ctx.guild.ban(member, reason=reason)
+        await ctx.send(f"✅ {member} has been permanently banned. Reason: {reason}")
+    
+    @commands.command()
+    @commands.guild_only()
+    async def kick(self, ctx, member: discord.Member, *, reason="None"):
+        if ctx.author.top_role <= member.top_role:
+            await ctx.send("You cannot ban this user.")
+            return
+        await ctx.guild.kick(member, reason=reason)
+        await ctx.send(f"✅ {member} has been kicked from the server. Reason: {reason}")
+
+    @tasks.loop(minutes=1)
+    async def check_expired_punishments(self):
+        punishments = self.bot.database.get_expired_punishments()
+        for p in punishments:
+            member_id, guild_id, punishment_type = p
+            guild = self.bot.get_guild(guild_id)
+            if punishment_type == self.BAN:
+                bans = await guild.bans()
+                for b in bans:
+                    if b.user == member_id:
+                        await guild.unban(b.user)
+                        break
+            elif punishment_type == self.MUTE:
+                pass
+
 
 def setup(bot):
     bot.add_cog(General(bot))

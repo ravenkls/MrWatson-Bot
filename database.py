@@ -18,8 +18,26 @@ class Database:
                             "(member_id BIGINT PRIMARY KEY, points INTEGER);")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS warnings "
                             "(member_id BIGINT, author BIGINT, reason TEXT, timestamp BIGINT);")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS temporary_punishments "
+                            "(member_id BIGINT, guild_id BIGINT, type CHAR(1), expiry_date BIGINT);")
         self.conn.commit()
     
+    def new_punishment(self, member, punishment_type, expire_date):
+        """Add temporary punishment to the database."""
+        self.cursor.execute("INSERT INTO temporary_punishments (member_id, guild_id, type, expiry_date) "
+                            "VALUES (%s, %s, %s, %s);", (member.id, member.guild.id, punishment_type, expire_date))
+        self.conn.commit()
+
+    def get_expired_punishments(self):
+        """Retrieve any expired punishments."""
+        time_now = time.time()
+        self.cursor.execute("SELECT member_id, guild_id, type FROM temporary_punishments WHERE expiry_date < %s;", (time_now,))
+        expired = self.cursor.fetchall()
+        if expired:
+            self.cursor.execute("DELETE FROM temporary_punishments WHERE expiry_date < %s;", (time_now,))
+            self.conn.commit()
+        return expired
+
     def add_warning(self, member, author, reason):
         """Add a warning to a member."""
         self.cursor.execute("INSERT INTO warnings (member_id, author, reason, timestamp) "
