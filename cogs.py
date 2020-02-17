@@ -142,6 +142,15 @@ class Helpers(commands.Cog):
     async def leaderboard(self, ctx):
         """View the reputation points leaderboard."""
         leaderboard = self.bot.database.get_top_reps()
+        embed = discord.Embed()
+        embed.set_author(name="Reputation Leaderboard", icon_url="https://images.emojiterra.com/mozilla/512px/1f3c6.png")
+        embed.set_thumbnail(url="https://images.emojiterra.com/mozilla/512px/1f3c6.png")
+        for member_id, points in leaderboard:
+            member = ctx.guild.get_member(member_id)
+            if member:
+                embed.add_field(name=str(member), value=points)
+        await ctx.send(embed=embed)
+        
 
 def setup(bot):
     bot.add_cog(General(bot))
