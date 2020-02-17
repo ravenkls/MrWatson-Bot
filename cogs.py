@@ -172,7 +172,8 @@ class Helpers(commands.Cog):
         if query is not None:
             args = query.split()
             print(args)
-            if query[0].strip() in ["set", "remove", "add"]:
+            if query[0].strip().lower() in ["set", "remove", "add"]:
+                print("OK")
                 if len(query) != 3:
                     raise Exception("Invalid options.")
                 member = ctx.guild.get_member_named(self.query[1].strip())
@@ -183,12 +184,13 @@ class Helpers(commands.Cog):
                     raise Exception("Amount must be an integer")
                 amount = int(amount)
 
-                if query[0].strip() == "set":
+                if query[0].strip().lower() == "set":
+                    print("OK")
                     self.bot.database.set_reps(member, amount)
                     new_points = amount
-                elif query[0].strip() == "remove":
+                elif query[0].strip().lower() == "remove":
                     new_points = self.bot.database.add_rep(member, amount=-amount)
-                elif query[0].strip() == "add":
+                elif query[0].strip().lower() == "add":
                     new_points = self.bot.database.add_rep(member, amount=amount)
                         
                 await ctx.send(f"✅ **{member}** now has `{new_points}` reputation points!")
