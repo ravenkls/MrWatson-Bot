@@ -120,7 +120,7 @@ class Helpers(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=["h"])
+    @commands.command()
     async def rep(self, ctx, member: discord.Member):
         """Add a reputation point to a member."""
         reps = self.bot.database.add_rep(member)
