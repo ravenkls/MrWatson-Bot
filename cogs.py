@@ -261,7 +261,7 @@ class Moderation(commands.Cog):
                 date = datetime.datetime.fromtimestamp(last_warning[2])
                 embed.add_field(name=date.strftime("%d %B %Y"),
                                 value=f"Reason: {reason}\n"
-                                      f"Given by: {ctx.get_member(author_id)}", inline=True)
+                                      f"Given by: {ctx.guild.get_member(author_id)}", inline=True)
             await ctx.send(embed=embed)
         else:
             await ctx.send(f"{member} has no previous warnings.")
