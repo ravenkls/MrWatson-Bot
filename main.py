@@ -1,17 +1,19 @@
+from discord.ext import commands
+from settings import DISCORD_TOKEN
 from database import Database
+import logging
+import os
 
 
-class Member:
-    def __init__(self, id):
-        self.id = id
+class Bot(commabds.Bot):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.database = Database()
 
 
-hodor = Member(420961337448071178)
-watson = Member(596743813385682945)
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
 
-db = Database()
-db.add_rep(hodor)
-db.add_rep(watson)
-
-db.cursor.execute("SELECT * FROM reputation_points;")
-print(db.cursor.fetchall())
+    bot = Bot(command_prefix="-")
+    bot.load_extension("cogs")
+    bot.run(DISCORD_TOKEN)

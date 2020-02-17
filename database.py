@@ -1,4 +1,5 @@
 import psycopg2
+from .settings import DATABASE_URL
 import os
 
 
@@ -6,7 +7,7 @@ class Database:
     """A database access object for interacting with the bot database."""
 
     def __init__(self):
-        self.conn = psycopg2.connect(os.environ.get("DATABASE_URL"), sslmode="require")
+        self.conn = psycopg2.connect(DATABASE_URL, sslmode="require")
         self.cursor = self.conn.cursor()
         self.init_tables()
     
@@ -18,19 +19,32 @@ class Database:
     
     def add_rep(self, member, amount=1):
         """Add X reputation points to the member."""
-        self.cursor.execute("SELECT points FROM reputation_points WHERE member_id=%s;", 
-                            (member.id,))
+        points = self.get_reps(member)
 
-        points = self.cursor.fetchone()
         if points:
-            new_points = points[0] + amount
+            new_points = points + amount
             self.cursor.execute("UPDATE reputation_points SET points=%s WHERE member_id=%s;", 
                                 (new_points, member.id))
         else:
             new_points = amount
             self.cursor.execute("INSERT INTO reputation_points (member_id, points) VALUES (%s, %s);",
                                 (member.id, new_points))
-
         self.conn.commit()
-        
+
         return new_points
+
+    def get_reps(self, member):
+        """Retrieve the reputation points for a member."""
+        self.cursor.execute("SELECT points FROM reputation_points WHERE member_id=%s;", 
+                            (member.id,))
+        points = self.cursor.fetchone()
+        if points:
+            return points[0]
+        else:
+            return 0
+    
+    def get_top_reps(self, amount=10):
+        """Retrieve the top X people by reps."""
+        self.cursor.execute("SELECT * FROM reputation_points ORDER BY points DESC LIMIT %s;",
+                            (amount,))
+        return self.cursor.fetchall()
