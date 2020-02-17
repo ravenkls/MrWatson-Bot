@@ -32,6 +32,20 @@ class Database:
         self.conn.commit()
 
         return new_points
+    
+    def set_reps(self, member, amount):
+        """Set the reps for a member to a specific value."""
+        points = self.get_reps(member)
+
+        if points:
+            self.cursor.execute("UPDATE reputation_points SET points=%s WHERE member_id=%s;", 
+                                (amount, member.id))
+        else:
+            self.cursor.execute("INSERT INTO reputation_points (member_id, points) VALUES (%s, %s);",
+                                (member.id, amount))
+        self.conn.commit()
+
+        return amount
 
     def get_reps(self, member):
         """Retrieve the reputation points for a member."""

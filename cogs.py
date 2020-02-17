@@ -161,8 +161,40 @@ class Helpers(commands.Cog):
         
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
-    async def resetreps(self, ctx):
-        """Resets all the reputation points!"""
+    async def reps(self, ctx, *, query: str=None):
+        """Configure the reputation points. (Admin only)
+        
+        Command options:
+        -reps set <member> <amount>
+        -reps remove <member> <amount>
+        -reps add <member> <amount>
+        -reps clear"""
+        if query is not None:
+            args = query.split(" ")
+            if query[0] in ["set", "remove", "add"]:
+                if len(query) != 3:
+                    raise Exception("Invalid options.")
+                member = ctx.guild.get_member_named(self.query[1])
+                if not member:
+                    raise Exception("Member not found")
+                amount = query[2]
+                if not amount.isdigit():
+                    raise Exception("Amount must be an integer")
+                amount = int(amount)
+
+                if query[0] == "set":
+                    self.bot.database.set_reps(member, amount)
+                    new_points = amount
+                elif query[0] == "remove":
+                    new_points = self.bot.database.add_rep(member, amount=-amount)
+                elif query[0] == "add":
+                    new_points = self.bot.database.add_rep(member, amount=amount)
+                        
+                await ctx.send(f"✅ **{member}** now has `{new_points}` reputation points!")
+            else:
+                await self.remove_all_reps(ctx)  
+
+    async def remove_all_reps(self, ctx):
         temp = await ctx.send("⛔ **You are about to completely remove all reputation points from everyone in the server**\n"
                               "\nTo confirm this action, please type `confirm` within the next 10 seconds.")
         
