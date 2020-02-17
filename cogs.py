@@ -269,7 +269,7 @@ class Moderation(commands.Cog):
             for n, w in enumerate(warnings[(page-1)*6:page*6], start=(page-1)*6 + 1):
                 author_id, reason, timestamp = w
                 date = datetime.datetime.fromtimestamp(last_warning[2])
-                embed.add_field(name=f"{n}. {date.strftime("%d %B %Y")}",
+                embed.add_field(name=f"{n}. {date.strftime('%d %B %Y')}",
                                 value=f"Reason: {reason}\n"
                                       f"Given by: {ctx.guild.get_member(author_id)}", inline=True)
             await ctx.send(embed=embed)
