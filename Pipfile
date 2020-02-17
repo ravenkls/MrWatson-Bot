@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 discord-py = "*"
 psycopg2 = "*"
+idna-ssl = "*"
 
 [requires]
 python_version = "3.8"
