@@ -1,14 +1,17 @@
-import psycopg2
-import os
+from database import Database
 
-print('STARTING')
-conn = psycopg2.connect(os.environ.get("DATABASE_URL"), sslmode="require")
-cursor = conn.cursor()
-print(cursor)
-cursor.execute("DROP TABLE reputation_points;")
-cursor.execute("CREATE TABLE IF NOT EXISTS reputation_points (member_id BIGINT PRIMARY KEY, points INTEGER);")
-conn.commit()
-print('TABLE CREATED')
-cursor.execute("INSERT INTO reputation_points (member_id, points) VALUES (%s, %s);", (596743813385682945, 1))
-print('ENTRY ADDED')
-conn.commit()
+
+class Member:
+    def __init__(self, id):
+        self.id = id
+
+
+hodor = Member(420961337448071178)
+watson = Member(596743813385682945)
+
+db = Database()
+db.add_rep(hodor)
+db.add_rep(watson)
+
+db.cursor.execute("SELECT * FROM reputation_points;")
+print(db.cursor.fetchall())
