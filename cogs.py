@@ -242,12 +242,20 @@ class Moderation(commands.Cog):
         """Warn a member of the server."""
         self.bot.database.add_warning(member, ctx.author, reason)
         await ctx.send(f"⚠️ {member.mention} has been warned. Reason: {reason}")
+        await member.send(f"⚠️ You have been warned by {ctx.author}. Reason: {reason}")
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
-    async def warnings(self, ctx, member: discord.Member):
+    async def warnings(self, ctx, member: discord.Member, page: int=1):
         """Retrieve all the warnings that a user has been given."""
         warnings = self.bot.database.get_warnings(member)
+
+        pages = (len(warnings)-1) // 6 + 1
+        if page > pages:
+            page = pages
+        elif page < 1:
+            page = 1
+
         if warnings:
             last_warning = warnings[0]
             last_warning_time = datetime.datetime.fromtimestamp(last_warning[2]).strftime("%d %B %Y")
@@ -257,16 +265,32 @@ class Moderation(commands.Cog):
                                               f"Their last warning was given on {last_warning_time}")
             embed.set_thumbnail(url=member.avatar_url_as(format='png', static_format='png'))
             embed.set_author(name=str(member), icon_url=member.avatar_url_as(format='png', static_format='png'))
-            for author_id, reason, timestamp in warnings:
+            embed.set_footer(text=f"Page {page} of {pages}")
+            for n, w in enumerate(warnings[(page-1)*6:page*6], start=(page-1)*6 + 1):
+                author_id, reason, timestamp = w
                 date = datetime.datetime.fromtimestamp(last_warning[2])
-                embed.add_field(name=date.strftime("%d %B %Y"),
+                embed.add_field(name=f"{n}. {date.strftime("%d %B %Y")}",
                                 value=f"Reason: {reason}\n"
                                       f"Given by: {ctx.guild.get_member(author_id)}", inline=True)
             await ctx.send(embed=embed)
         else:
             await ctx.send(f"{member} has no previous warnings.")
 
+    @commands.command()
+    @commands.has_permissions(kick_members=True)
+    async def removewarning(self, ctx, member: discord.Member, warning_id: int)
+        """Remove a warning given the warning ID. (See user warning list for warning IDs)."""
+        warnings = self.bot.database.get_warnings(member)
 
+        try:
+            warning = warnings[warning_id-1]
+        except IndexError:
+            await ctx.send(f"There is no warning with the ID {warning_id}")
+        else:
+            author_id, reason, timestamp = warning
+            self.bot.database.remove_warning(member, timestamp)
+            await ctx.send(f"✅ The warning given to {member} by {ctx.guild.get_member(author_id)} "
+                            "for reason: \"{reason}\" has been removed.")
 
 def setup(bot):
     bot.add_cog(General(bot))
