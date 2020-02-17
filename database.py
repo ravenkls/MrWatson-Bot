@@ -38,9 +38,12 @@ class Database:
         points = self.get_reps(member)
 
         if points:
-            self.cursor.execute("UPDATE reputation_points SET points=%s WHERE member_id=%s;", 
-                                (amount, member.id))
-        else:
+            if amount != 0:
+                self.cursor.execute("UPDATE reputation_points SET points=%s WHERE member_id=%s;", 
+                                    (amount, member.id))
+            else:
+                self.cursor.execute("DELETE FROM reputation_points WHERE member_id=%s", (member.id))
+        elif amount != 0:
             self.cursor.execute("INSERT INTO reputation_points (member_id, points) VALUES (%s, %s);",
                                 (member.id, amount))
         self.conn.commit()
