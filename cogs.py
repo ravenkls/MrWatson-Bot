@@ -6,6 +6,10 @@ from discord.ext import commands
 from settings import *
 
 
+def server_channel(ctx):
+    return not isinstance(ctx.channel, discord.DMChannel)
+
+
 class General(commands.Cog):
 
     def __init__(self, bot):
@@ -121,17 +125,16 @@ class Helpers(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    @commands.check(server_channel)
     async def rep(self, ctx, member: discord.Member):
         """Add a reputation point to a member."""
-        print(ctx.channel)
         if member.bot:
             raise Exception("You can't rep a bot!")
         elif member == ctx.author:
             raise Exception("You can't rep yourself!")
 
         reps = self.bot.database.add_rep(member)
-        embed = discord.Embed(description=f"✅ **{member.mention}** now has `{reps}` reputation points!", colour=EMBED_ACCENT_COLOUR)
-        await ctx.send(embed=embed)
+        await ctx.send(f"✅ **{member.mention}** now has `{reps}` reputation points!")
 
     @commands.command()
     async def leaderboard(self, ctx):
