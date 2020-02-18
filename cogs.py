@@ -421,6 +421,9 @@ class Moderation(commands.Cog):
             await ctx.send("You cannot ban this user.")
             return
         await ctx.guild.kick(member, reason=f"Kicked by {ctx.author}. Reason: {reason}")
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                              description=f"👢 {member} was kicked from the server by {ctx.author.mention}")
+        await self.log(embed)
         await ctx.send(f"✅ {member} has been kicked from the server. Reason: {reason}")
 
     @commands.command()
