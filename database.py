@@ -33,9 +33,9 @@ class Database:
         """Set a setting value."""
         if key in self.settings:
             self.cursor.execute("UPDATE settings SET value=%s WHERE key=%s;", (value, key))
-            self.conn.commit()
         else:
             self.cursor.execute("INSERT INTO settings (key, value) VALUES (%s, %s);", (key, value))
+        self.conn.commit()
         self.settings[key] = value
 
     def new_punishment(self, member, punishment_type, expire_date):
