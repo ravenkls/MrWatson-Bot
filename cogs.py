@@ -406,7 +406,7 @@ class Moderation(commands.Cog):
                 total_time = datetime.timedelta(days=7*weeks + days, hours=hours, minutes=minutes)
                 expiry_time = time.time() + total_time.total_seconds()
 
-        await ctx.guild.ban(member, reason=reason=f"Banned by {ctx.author}. Reason: {reason}")
+        await ctx.guild.ban(member, reason=f"Banned by {ctx.author}. Reason: {reason}")
         if expiry_time >= 0:
             self.bot.database.new_punishment(member, self.BAN, expiry_time)
             await ctx.send(f"✅ {member} has been banned for {str(total_time)}. Reason: {reason}")
@@ -454,7 +454,7 @@ class Moderation(commands.Cog):
             guild = self.bot.get_guild(int(guild_id))
             channel = guild.get_channel(int(channel_id))
             await channel.send(embed=embed)
-            
+
 
 def setup(bot):
     bot.add_cog(General(bot))
