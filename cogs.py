@@ -197,7 +197,7 @@ class Moderation(commands.Cog):
         self.check_expired_punishments.start()
 
     @commands.command()
-    @commands.check(is_admin)
+    @commands.has_permissions(administrator=True)
     @commands.guild_only()
     async def adminrole(self, ctx, *, role: discord.Role):
         self.bot.database.set_setting("admin_role_guild_id", str(ctx.guild.id))
