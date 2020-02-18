@@ -415,7 +415,7 @@ class Moderation(commands.Cog):
             await ctx.send("You cannot ban this user.")
             return
 
-        reason, expiry_time = self.parse_reason_with_time_flags(reason)
+        reason, total_time, expiry_time = self.parse_reason_with_time_flags(reason)
 
         await ctx.guild.ban(member, reason=f"Banned by {ctx.author}. Reason: {reason}")
         if expiry_time >= 0:
@@ -445,7 +445,7 @@ class Moderation(commands.Cog):
             await ctx.send("You cannot mute this user.")
             return
 
-        reason, expiry_time = self.parse_reason_with_time_flags(reason)
+        reason, total_time, expiry_time = self.parse_reason_with_time_flags(reason)
         mute_role_guild = self.bot.database.settings.get('guild_mute_role_id')
         if not mute_role_guild:
             await ctx.send("You haven't set a mute role yet, do this using the `-muterole` command!")
@@ -598,7 +598,7 @@ class Moderation(commands.Cog):
             total_time = datetime.timedelta(days=7*weeks + days, hours=hours, minutes=minutes)
             expiry_time = time.time() + total_time.total_seconds()
 
-        return reason, expiry_time
+        return reason, total_time, expiry_time
 
 def setup(bot):
     bot.add_cog(General(bot))
