@@ -573,6 +573,7 @@ class Moderation(commands.Cog):
 
     def parse_reason_with_time_flags(self, reason):
         expiry_time = -1
+        total_time = -1
         reason_split = reason.strip().split("-t")
         reason = reason_split[0]
         if reason.strip() == "":
