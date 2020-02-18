@@ -536,6 +536,17 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
+    async def roleping(self, *, role: discord.Role):
+        """Pings a Role that isn't pingable by everyone."""
+        previous_setting = role.mentionable
+        await role.edit(mentionable=True)
+        await ctx.send(role.mention)
+        await role.edit(mentionable=previous_setting)
+        await ctx.message.delete()
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
     async def logchannel(self, ctx, channel: discord.TextChannel):
         """Set the channel in which logs are sent."""
         self.bot.database.set_setting("log_guild_id", str(channel.guild.id))
