@@ -178,48 +178,6 @@ class Watson(commands.Cog):
             if member:
                 embed.add_field(name=str(member), value=points, inline=False)
         await ctx.send(embed=embed)
-
-    async def remove_all_reps(self, ctx):
-        temp = await ctx.send("⛔ **You are about to completely remove all reputation points from everyone in the server**\n"
-                              "\nTo confirm this action, please type `confirm` within the next 10 seconds.")
-        
-        def check(m):
-            return m.content == "confirm" and m.author == ctx.author and m.channel == ctx.channel
-        
-        try:
-            response = await self.bot.wait_for("message", check=check, timeout=10)
-        except asyncio.TimeoutError:
-            return
-        else:
-            self.bot.database.clear_reputations()
-            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
-                                  description=f"🏅 {ctx.author.mention} removed ALL reputation points")
-            await self.log(embed)
-            await response.delete()
-            await ctx.send("✅ All reputation points have been cleared.")
-            if ctx.author != ctx.guild.owner:
-                await ctx.guild.owner.send("**Notice:** All reputation points have been cleared from the server\n"
-                                           f"\nThis action was carried out by {ctx.author} (`{ctx.author.id}`)")
-        finally:
-            await temp.delete()
-    
-    @commands.command(hidden=True)
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    async def googleit(self, ctx, member: discord.Member):
-        """Run this command and chaos will ensue."""
-        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
-                              description=f"😱 {ctx.author.mention} ran the -googleit command on {member.mention}")
-        await self.log(embed)
-        messages = []
-        for channel in ctx.guild.channels:
-            if isinstance(channel, discord.TextChannel):
-                msg = await channel.send(member.mention)
-                messages.append(msg)
-        
-        await asyncio.sleep(5)
-        for m in messages:
-            await m.delete()
             
 
 class Moderation(commands.Cog):
@@ -271,7 +229,49 @@ class Moderation(commands.Cog):
                 await self.log(embed)
                 await ctx.send(f"✅ **{member}** now has `{new_points}` reputation points!")
             elif args[0].lower() == "clear":
-                await self.remove_all_reps(ctx)  
+                await self.remove_all_reps(ctx)
+
+    async def remove_all_reps(self, ctx):
+        temp = await ctx.send("⛔ **You are about to completely remove all reputation points from everyone in the server**\n"
+                              "\nTo confirm this action, please type `confirm` within the next 10 seconds.")
+        
+        def check(m):
+            return m.content == "confirm" and m.author == ctx.author and m.channel == ctx.channel
+        
+        try:
+            response = await self.bot.wait_for("message", check=check, timeout=10)
+        except asyncio.TimeoutError:
+            return
+        else:
+            self.bot.database.clear_reputations()
+            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                  description=f"🏅 {ctx.author.mention} removed ALL reputation points")
+            await self.log(embed)
+            await response.delete()
+            await ctx.send("✅ All reputation points have been cleared.")
+            if ctx.author != ctx.guild.owner:
+                await ctx.guild.owner.send("**Notice:** All reputation points have been cleared from the server\n"
+                                           f"\nThis action was carried out by {ctx.author} (`{ctx.author.id}`)")
+        finally:
+            await temp.delete()
+    
+    @commands.command(hidden=True)
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def googleit(self, ctx, member: discord.Member):
+        """Run this command and chaos will ensue."""
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                              description=f"😱 {ctx.author.mention} ran the -googleit command on {member.mention}")
+        await self.log(embed)
+        messages = []
+        for channel in ctx.guild.channels:
+            if isinstance(channel, discord.TextChannel):
+                msg = await channel.send(member.mention)
+                messages.append(msg)
+        
+        await asyncio.sleep(5)
+        for m in messages:
+            await m.delete()
 
     @commands.command()
     @commands.guild_only()
@@ -543,9 +543,12 @@ class Moderation(commands.Cog):
         self.bot.database.set_setting("log_channel_id", str(channel.id))
         await ctx.send(f"✅ {channel.mention} is now the log channel.")
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(minutes=1, reconnect=True)
     async def check_expired_punishments(self):
+        print('Checking for expired punishments')
         punishments = self.bot.database.get_expired_punishments()
+        if punishments:
+            print('Punishments found, Removing them.')
         for p in punishments:
             member_id, guild_id, punishment_type = p
             guild = self.bot.get_guild(guild_id)
