@@ -536,7 +536,7 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
-    async def roleping(self, *, role: discord.Role):
+    async def roleping(self, ctx, *, role: discord.Role):
         """Pings a Role that isn't pingable by everyone."""
         previous_setting = role.mentionable
         await role.edit(mentionable=True)
