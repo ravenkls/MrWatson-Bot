@@ -308,7 +308,7 @@ class Moderation(commands.Cog):
     async def removewarning(self, ctx, member: discord.Member, warning_id):
         """Remove a warning given the warning ID. (See user warning list for warning IDs).
         
-        To remove all warnings, replace the warning ID with the word "all""""
+        To remove all warnings, replace the warning ID with the word "all\""""
         warnings = self.bot.database.get_warnings(member)
         if not warning_id.isdigit():
             if warning_id == "all":
