@@ -302,28 +302,43 @@ class Moderation(commands.Cog):
         else:
             await ctx.send(f"{member} has no previous warnings.")
 
-    @commands.command()
+    @commands.command(aliases=["removewarn", "warnremove"])
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
-    async def removewarning(self, ctx, member: discord.Member, warning_id: int):
-        """Remove a warning given the warning ID. (See user warning list for warning IDs)."""
+    async def removewarning(self, ctx, member: discord.Member, warning_id):
+        """Remove a warning given the warning ID. (See user warning list for warning IDs).
+        
+        To remove all warnings, replace the warning ID with the word "all""""
         warnings = self.bot.database.get_warnings(member)
-        if warning_id < 1:
-            await ctx.send(f"There is no warning with the ID {warning_id}")
-            return
-        try:
-            warning = warnings[warning_id-1]
-        except IndexError:
-            await ctx.send(f"There is no warning with the ID {warning_id}")
+        if not warning_id.isdigit():
+            if warning_id == "all":
+                for w in warnings:
+                    timestamp = w[-1]
+                    self.bot.database.remove_warning(member, timestamp)
+                    await ctx.send(f"✅ All warnings for {member} have been removed.")
+                    embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                          description=f"⚠️ {ctx.author.mention} removed all warnings from {member.mention}")
+                    await self.log(embed)
+            else:
+                raise ValueError("Warning ID must be a number.")
         else:
-            author_id, reason, timestamp = warning
-            self.bot.database.remove_warning(member, timestamp)
-            await ctx.send(f"✅ The warning given to {member} by {ctx.guild.get_member(author_id)} "
-                           f"for reason: \"{reason}\" has been removed.")
+            warning_id = int(warning_id)
+            if warning_id < 1:
+                await ctx.send(f"There is no warning with the ID {warning_id}")
+                return
+            try:
+                warning = warnings[warning_id-1]
+            except IndexError:
+                await ctx.send(f"There is no warning with the ID {warning_id}")
+            else:
+                author_id, reason, timestamp = warning
+                self.bot.database.remove_warning(member, timestamp)
+                await ctx.send(f"✅ The warning given to {member} by {ctx.guild.get_member(author_id)} "
+                               f"for reason: \"{reason}\" has been removed.")
                            
-            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
-                                  description=f"⚠️ {ctx.author.mention} removed a warning from {member.mention}")
-            await self.log(embed)
+                embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                      description=f"⚠️ {ctx.author.mention} removed a warning from {member.mention}")
+                await self.log(embed)
 
     @commands.command(aliases=["vckick"])
     @commands.guild_only()
