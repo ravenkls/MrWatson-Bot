@@ -480,14 +480,10 @@ class Moderation(commands.Cog):
             await ctx.send("You haven't set a mute role yet, do this using the `-muterole` command!")
             return
         elif res:
-            guild = self.bot.get_guild(int(mute_role_guild))
-            role = guild.get_role(int(self.bot.database.settings.get('mute_role_id')))
-            if role in member.roles:
-                await member.remove_roles(role)
-                await ctx.send(f"✅ {member} has been unmuted")
-                embed = discord.Embed(colour=EMBED_ACCENT_COLOUR,
-                                    description=f"🙊 {member} was unmuted by {ctx.author.mention}.")
-                await self.log(embed)
+            await ctx.send(f"✅ {member} has been unmuted")
+            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR,
+                                description=f"🙊 {member} was unmuted by {ctx.author.mention}.")
+            await self.log(embed)
         else:
             await ctx.send(f"{member} isn't muted.")
 
