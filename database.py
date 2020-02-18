@@ -29,10 +29,6 @@ class Database:
         self.cursor.execute("SELECT * FROM settings;")
         return dict(self.cursor.fetchall())
     
-    def get_setting(self, key):
-        """Get a setting value."""
-        return self.settings[key]
-    
     def set_setting(self, key, value):
         """Set a setting value."""
         if key in self.settings:

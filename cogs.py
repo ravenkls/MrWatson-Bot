@@ -172,6 +172,9 @@ class Watson(commands.Cog):
             return
         else:
             self.bot.database.clear_reputations()
+            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                  description=f"🏅 {ctx.author.mention} removed ALL reputation points")
+            await self.log(embed)
             await response.delete()
             await ctx.send("✅ All reputation points have been cleared.")
             if ctx.author != ctx.guild.owner:
@@ -185,6 +188,9 @@ class Watson(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def googleit(self, ctx, member: discord.Member):
         """Run this command and chaos will ensue."""
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                              description=f"😱 {ctx.author.mention} ran the -googleit command on {member.mention}")
+        await self.log(embed)
         messages = []
         for channel in ctx.guild.channels:
             if isinstance(channel, discord.TextChannel):
@@ -232,11 +238,17 @@ class Moderation(commands.Cog):
 
                 if args[0].lower() == "set":
                     new_points = self.bot.database.set_reps(member, amount)
+                    embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                          description=f"🏅 {ctx.author.mention} set {member.mention}'s reputation points to {new_points}")
                 elif args[0].lower() == "remove":
                     new_points = self.bot.database.add_rep(member, amount=-amount)
+                    embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                          description=f"🏅 {ctx.author.mention} removed {amount} reputation points from {member.mention}")
                 elif args[0].lower() == "add":
                     new_points = self.bot.database.add_rep(member, amount=amount)
-                        
+                    embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                          description=f"🏅 {ctx.author.mention} added {amount} reputation points from {member.mention}")
+                await self.log(embed)
                 await ctx.send(f"✅ **{member}** now has `{new_points}` reputation points!")
             elif args[0].lower() == "clear":
                 await self.remove_all_reps(ctx)  
@@ -252,6 +264,10 @@ class Moderation(commands.Cog):
         self.bot.database.add_warning(member, ctx.author, reason)
         await ctx.send(f"⚠️ {member.mention} has been warned. Reason: {reason}")
         await member.send(f"⚠️ You have been warned by {ctx.author}. Reason: {reason}")
+
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                              description=f"⚠️ {member.mention} was warned by {ctx.author.mention}. Reason: {reason}")
+        await self.log(embed)
 
     @commands.command()
     @commands.guild_only()
@@ -304,6 +320,10 @@ class Moderation(commands.Cog):
             self.bot.database.remove_warning(member, timestamp)
             await ctx.send(f"✅ The warning given to {member} by {ctx.guild.get_member(author_id)} "
                            f"for reason: \"{reason}\" has been removed.")
+                           
+            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                  description=f"⚠️ {ctx.author.mention} removed a warning from {member.mention}")
+            await self.log(embed)
 
     @commands.command(aliases=["vckick"])
     @commands.guild_only()
@@ -318,6 +338,11 @@ class Moderation(commands.Cog):
             await member.move_to(kick_channel)
             await kick_channel.delete()
             await ctx.send("{0.name} has been kicked from voice".format(member))
+            
+            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                  description=f"🎤 {member.mention} was kicked from voice by {ctx.author.mention}")
+            await self.log(embed)
+
         else:
             await ctx.send("{0.name} is not in a voice channel".format(member))
 
@@ -331,6 +356,11 @@ class Moderation(commands.Cog):
         else:
             await ctx.channel.purge(limit=limit)
         completed = await ctx.send(":ok_hand:")
+
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                              description=f"🗑️ {limit} messages have been cleared by {ctx.author.mention} in {ctx.channel.mention}")
+        await self.log(embed)
+
         await asyncio.sleep(2)
         await completed.delete()
 
@@ -354,6 +384,8 @@ class Moderation(commands.Cog):
         if reason:
             reason_split = reason.strip().split("-t")
             reason = reason_split[0]
+            if reason.strip() == "":
+                reason = "None"
             if len(reason_split) > 1:
                 time_flag = reason_split[1]
                 times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', time_flag)
@@ -374,7 +406,7 @@ class Moderation(commands.Cog):
                 total_time = datetime.timedelta(days=7*weeks + days, hours=hours, minutes=minutes)
                 expiry_time = time.time() + total_time.total_seconds()
 
-        await ctx.guild.ban(member, reason=reason)
+        await ctx.guild.ban(member, reason=reason=f"Banned by {ctx.author}. Reason: {reason}")
         if expiry_time >= 0:
             self.bot.database.new_punishment(member, self.BAN, expiry_time)
             await ctx.send(f"✅ {member} has been banned for {str(total_time)}. Reason: {reason}")
@@ -388,7 +420,7 @@ class Moderation(commands.Cog):
         if ctx.author.top_role <= member.top_role:
             await ctx.send("You cannot ban this user.")
             return
-        await ctx.guild.kick(member, reason=reason)
+        await ctx.guild.kick(member, reason=f"Kicked by {ctx.author}. Reason: {reason}")
         await ctx.send(f"✅ {member} has been kicked from the server. Reason: {reason}")
 
     @commands.command()
@@ -414,6 +446,15 @@ class Moderation(commands.Cog):
             elif punishment_type == self.MUTE:
                 pass
 
+    async def log(self, embed):
+        """Log messages if the log channel is enabled."""
+        guild_id = self.bot.database.settings.get('log_guild_id')
+        channel_id = self.bot.database.settings.get('log_channel_id')
+        if guild_id:
+            guild = self.bot.get_guild(int(guild_id))
+            channel = guild.get_channel(int(channel_id))
+            await channel.send(embed=embed)
+            
 
 def setup(bot):
     bot.add_cog(General(bot))
