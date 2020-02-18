@@ -516,7 +516,7 @@ class Moderation(commands.Cog):
 
         for channel in ctx.guild.channels:
             if isinstance(channel, discord.TextChannel):
-                await channel.set_permissions(role, overwrite=text_overwrite, reason=reason)
+                await channel.set_permissions(role, overwrite=text_overwrite)
             # elif isinstance(channel, discord.VoiceChannel):
             #     await channel.set_permissions(role, overwrite=voice_overwrite, reason=reason)
         
