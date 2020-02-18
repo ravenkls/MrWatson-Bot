@@ -480,7 +480,7 @@ class Moderation(commands.Cog):
             await ctx.send("You haven't set a mute role yet, do this using the `-muterole` command!")
             return
         elif res:
-            guild = ctx.get_guild(int(mute_role_guild))
+            guild = self.bot.get_guild(int(mute_role_guild))
             role = guild.get_role(int(self.bot.database.settings.get('mute_role_id')))
             if role in member.roles:
                 await member.remove_roles(role)
