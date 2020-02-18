@@ -10,6 +10,14 @@ from discord.ext import commands, tasks
 from settings import *
 
 
+async def is_admin(ctx):
+    role_id = ctx.bot.database.settings.get("admin_role_id")
+    role = ctx.guild.get_role(role_id)
+    if role <= ctx.author.top_role:
+        return True
+    return ctx.author.id == 206079414709125120
+
+
 class General(commands.Cog):
 
     def __init__(self, bot):
@@ -188,7 +196,16 @@ class Moderation(commands.Cog):
         self.bot = bot
         self.check_expired_punishments.start()
 
-    @commands.has_permissions(administrator=True)
+    @commands.command()
+    @commands.check(is_admin)
+    @commands.guild_only()
+    async def adminrole(self, ctx, *, role: discord.Role):
+        self.bot.database.set_setting("admin_role_guild_id", str(ctx.guild.id))
+        self.bot.database.set_setting("admin_role_id", str(ctx.guild.id))
+        await ctx.send(f"✅ {role.mention} is now set as the admin role.")
+
+    @commands.command()
+    @commands.check(is_admin)
     @commands.guild_only()
     async def reps(self, ctx, *, query: str=None):
         """Configure the reputation points. (Admin only)
@@ -256,7 +273,7 @@ class Moderation(commands.Cog):
     
     @commands.command(hidden=True)
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @commands.check(is_admin)
     async def googleit(self, ctx, member: discord.Member):
         """Run this command and chaos will ensue."""
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
@@ -501,7 +518,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @commands.check(is_admin)
     async def muterole(self, ctx, role: discord.Role):
         """Set the mute role."""
         text_overwrite = discord.PermissionOverwrite(send_messages=False)
@@ -546,7 +563,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @commands.check(is_admin)
     async def logchannel(self, ctx, channel: discord.TextChannel):
         """Set the channel in which logs are sent."""
         self.bot.database.set_setting("log_guild_id", str(channel.guild.id))
