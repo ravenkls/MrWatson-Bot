@@ -11,6 +11,7 @@ class Database:
         self.conn = psycopg2.connect(DATABASE_URL, sslmode="require")
         self.cursor = self.conn.cursor()
         self.init_tables()
+        self.settings = self.load_settings()
     
     def init_tables(self):
         """Intialise the database tables."""
@@ -20,8 +21,27 @@ class Database:
                             "(member_id BIGINT, author BIGINT, reason TEXT, timestamp BIGINT);")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS temporary_punishments "
                             "(member_id BIGINT, guild_id BIGINT, type CHAR(1), expiry_date BIGINT);")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);")
         self.conn.commit()
     
+    def load_settings(self):
+        """Load settings from database."""
+        self.cursor.execute("SELECT * FROM settings;")
+        return dict(self.cursor.fetchall())
+    
+    def get_setting(self, key):
+        """Get a setting value."""
+        return self.settings[key]
+    
+    def set_setting(self, key, value):
+        """Set a setting value."""
+        if key in self.settings:
+            self.cursor.execute("UPDATE settings SET value=%s WHERE key=%s;", (value, key))
+            self.conn.commit()
+        else:
+            self.cursor.execute("INSERT INTO settings (key, value) VALUES (%s, %s);", (key, value))
+        self.settings[key] = value
+
     def new_punishment(self, member, punishment_type, expire_date):
         """Add temporary punishment to the database."""
         self.cursor.execute("INSERT INTO temporary_punishments (member_id, guild_id, type, expiry_date) "

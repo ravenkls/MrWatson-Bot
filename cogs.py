@@ -336,6 +336,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
+    @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, member: discord.Member, *, reason="None", flags=None):
         """Ban a member from the server, to make the ban temporary, add the `-t` flag to the end.
         Usage examples:
@@ -382,12 +383,21 @@ class Moderation(commands.Cog):
     
     @commands.command()
     @commands.guild_only()
+    @commands.has_permissions(kick_members=True)
     async def kick(self, ctx, member: discord.Member, *, reason="None"):
         if ctx.author.top_role <= member.top_role:
             await ctx.send("You cannot ban this user.")
             return
         await ctx.guild.kick(member, reason=reason)
         await ctx.send(f"✅ {member} has been kicked from the server. Reason: {reason}")
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def logchannel(self, ctx, channel: discord.TextChannel):
+        self.bot.database.set_setting("log_guild_id", str(channel.guild.id))
+        self.bot.database.set_setting("log_channel_id", str(channel.id))
+        await ctx.send(f"✅ {channel.mention} is now the log channel.")
 
     @tasks.loop(minutes=1)
     async def check_expired_punishments(self):
