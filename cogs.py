@@ -76,8 +76,28 @@ class General(commands.Cog):
     @commands.command(hidden=True)
     @commands.is_owner()
     async def reload(self, ctx, plugin):
-        """Reload all plugins or a specific plugin"""
+        """Reload a specific plugin"""
         self.bot.reload_extension(plugin)
+
+    @commands.command()
+    async def ping(self, ctx):
+        """Pong!"""
+        pong_msg = await ctx.send(":ping_pong:  pong!")
+        diff = pong_msg.created_at - ctx.message.created_at
+        ms = int(diff.total_seconds() * 1000)
+        await pong_msg.edit(content=":ping_pong:  pong! `{}ms`".format(ms))
+
+    @commands.command(description="Shows how long I've been online for")
+    async def uptime(self, ctx):
+        """View how long that bot has been online for."""
+        uptime = datetime.datetime.utcnow() - self.bot.start_time
+        s = uptime.total_seconds()
+        m, s = divmod(s, 60)
+        h, m = divmod(m, 60)
+        d, h = divmod(h, 24)
+        d, h, m, s = map(int, (d, h, m, s))
+        uptime_embed = discord.Embed(description=":clock5:  **Ive been online for:**  {}d {}h {}m {}s".format(d, h, m, s), colour=EMBED_ACCENT_COLOUR)
+        await ctx.send(embed=uptime_embed)
 
     @commands.command(name="eval", hidden=True)
     @commands.is_owner()
@@ -269,7 +289,7 @@ class Moderation(commands.Cog):
                               description=f"⚠️ {member.mention} was warned by {ctx.author.mention}. Reason: {reason}")
         await self.log(embed)
 
-    @commands.command()
+    @commands.command(aliases=["warns"])
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
     async def warnings(self, ctx, member: discord.Member, page: int=1):
@@ -390,48 +410,125 @@ class Moderation(commands.Cog):
         -ban Member#4209 -t 1w
         -ban Member#4209
         """
-        expiry_time = -1
 
         if ctx.author.top_role <= member.top_role:
             await ctx.send("You cannot ban this user.")
             return
 
-        if reason:
-            reason_split = reason.strip().split("-t")
-            reason = reason_split[0]
-            if reason.strip() == "":
-                reason = "None"
-            if len(reason_split) > 1:
-                time_flag = reason_split[1]
-                times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', time_flag)
-
-                weeks = 0
-                days = 0
-                hours = 0
-                minutes = 0
-                for t in times:
-                    if t.endswith('w'):
-                        weeks = int(t[:-1])
-                    elif t.endswith('d'):
-                        days = int(t[:-1])
-                    elif t.endswith('h'):
-                        hours = int(t[:-1])
-                    elif t.endswith('m'):
-                        minutes = int(t[:-1])
-                total_time = datetime.timedelta(days=7*weeks + days, hours=hours, minutes=minutes)
-                expiry_time = time.time() + total_time.total_seconds()
+        reason, expiry_time = self.parse_reason_with_time_flags(reason)
 
         await ctx.guild.ban(member, reason=f"Banned by {ctx.author}. Reason: {reason}")
         if expiry_time >= 0:
             self.bot.database.new_punishment(member, self.BAN, expiry_time)
             await ctx.send(f"✅ {member} has been banned for {str(total_time)}. Reason: {reason}")
+            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                  description=f"🔨 {member} was banned from the server for {str(total_time)} by {ctx.author.mention}. Reason: {reason}")
         else:
             await ctx.send(f"✅ {member} has been permanently banned. Reason: {reason}")
+            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                  description=f"🔨 {member} was banned from the server permanently by {ctx.author.mention}. Reason: {reason}")
+        await self.log(embed)
     
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(mute_members=True)
+    async def mute(self, ctx, member: discord.Member, *, reason="None", flags=None):
+        """Mute a member in the server, to make the mute temporary, add the `-t` flag to the end.
+        Usage examples:
+        -mute Member#4209 breaking rules -t 2d
+        -mute Member#4209 being stupid
+        -mute Member#4209 -t 1w
+        -mute Member#4209
+        """
+
+        if ctx.author.top_role <= member.top_role:
+            await ctx.send("You cannot mute this user.")
+            return
+
+        reason, expiry_time = self.parse_reason_with_time_flags(reason)
+        mute_role_guild = self.bot.database.settings.get('guild_mute_role_id')
+        if not mute_role_guild:
+            await ctx.send("You haven't set a mute role yet, do this using the `-muterole` command!")
+            return
+        
+        guild = ctx.get_guild(int(mute_role_guild))
+        role = guild.get_role(int(self.bot.database.settings.get('mute_role_id')))
+        await member.add_roles(role, reason=f"Muted by {ctx.author}. Reason: {reason}")
+        if expiry_time >= 0:
+            self.bot.database.new_punishment(member, self.MUTE, expiry_time)
+            await ctx.send(f"✅ {member} has been muted for {str(total_time)}. Reason: {reason}")
+            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                  description=f"🙊 {member} was muted in all text channels for {str(total_time)} by {ctx.author.mention}. Reason: {reason}")
+        else:
+            await ctx.send(f"✅ {member} has been permanently banned. Reason: {reason}")
+            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                  description=f"🙊 {member} was muted in all text channels indefinitely by {ctx.author.mention}. Reason: {reason}")
+        await self.log(embed)
+    
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(mute_members=True)
+    async def unmute(self, ctx, member: discord.Member):
+        """Unmute a member in the server."""
+
+        if ctx.author.top_role <= member.top_role:
+            await ctx.send("You cannot unmute this user.")
+            return
+
+        res = await self.unmute_member(member)
+        if res == "No Role":
+            await ctx.send("You haven't set a mute role yet, do this using the `-muterole` command!")
+            return
+        elif res:
+            guild = ctx.get_guild(int(mute_role_guild))
+            role = guild.get_role(int(self.bot.database.settings.get('mute_role_id')))
+            if role in member.roles:
+                await member.remove_roles(role)
+                await ctx.send(f"✅ {member} has been unmuted")
+                embed = discord.Embed(colour=EMBED_ACCENT_COLOUR,
+                                    description=f"🙊 {member} was unmuted by {ctx.author.mention}.")
+                await self.log(embed)
+        else:
+            await ctx.send(f"{member} isn't muted.")
+
+    async def unmute_member(self, member: discord.Member):
+        mute_role_guild = self.bot.database.settings.get('guild_mute_role_id')
+        if not mute_role_guild:
+            return "No Role"
+
+        guild = self.bot.get_guild(int(mute_role_guild))
+        role = guild.get_role(int(self.bot.database.settings.get('mute_role_id')))
+        if role in member.roles:
+            await member.remove_roles(role)
+            return True
+        else:
+            return False
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def muterole(self, ctx, role: discord.Role):
+        """Set the mute role."""
+        text_overwrite = discord.PermissionOverwrite(send_messages=False)
+        voice_overwrite = discord.PermissionOverwrite(speak=False)
+
+        msg = await ctx.send("🔄 Setting up permissions...")
+
+        for channel in ctx.guild.channels:
+            if isinstance(channel, discord.TextChannel):
+                await channel.set_permissions(role, overwrite=text_overwrite, reason=reason)
+            # elif isinstance(channel, discord.VoiceChannel):
+            #     await channel.set_permissions(role, overwrite=voice_overwrite, reason=reason)
+        
+        self.bot.database.set_setting('guild_mute_role_id', str(ctx.guild.id))
+        self.bot.database.set_setting('mute_role_id', str(role.id))
+        await msg.edit(content=f"✅ {role.mention} is now set as the mute role.")
+
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
     async def kick(self, ctx, member: discord.Member, *, reason="None"):
+        """Kick a member from the server."""
         if ctx.author.top_role <= member.top_role:
             await ctx.send("You cannot ban this user.")
             return
@@ -445,6 +542,7 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def logchannel(self, ctx, channel: discord.TextChannel):
+        """Set the channel in which logs are sent."""
         self.bot.database.set_setting("log_guild_id", str(channel.guild.id))
         self.bot.database.set_setting("log_channel_id", str(channel.id))
         await ctx.send(f"✅ {channel.mention} is now the log channel.")
@@ -462,7 +560,8 @@ class Moderation(commands.Cog):
                         await guild.unban(b.user)
                         break
             elif punishment_type == self.MUTE:
-                pass
+                member = guild.get_member(member_id)
+                await self.unmute_member(member)
 
     async def log(self, embed):
         """Log messages if the log channel is enabled."""
@@ -473,6 +572,33 @@ class Moderation(commands.Cog):
             channel = guild.get_channel(int(channel_id))
             await channel.send(embed=embed)
 
+    def parse_reason_with_time_flags(self, reason):
+        expiry_time = -1
+        reason_split = reason.strip().split("-t")
+        reason = reason_split[0]
+        if reason.strip() == "":
+            reason = "None"
+        if len(reason_split) > 1:
+            time_flag = reason_split[1]
+            times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', time_flag)
+
+            weeks = 0
+            days = 0
+            hours = 0
+            minutes = 0
+            for t in times:
+                if t.endswith('w'):
+                    weeks = int(t[:-1])
+                elif t.endswith('d'):
+                    days = int(t[:-1])
+                elif t.endswith('h'):
+                    hours = int(t[:-1])
+                elif t.endswith('m'):
+                    minutes = int(t[:-1])
+            total_time = datetime.timedelta(days=7*weeks + days, hours=hours, minutes=minutes)
+            expiry_time = time.time() + total_time.total_seconds()
+
+        return reason, expiry_time
 
 def setup(bot):
     bot.add_cog(General(bot))
