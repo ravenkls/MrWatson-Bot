@@ -431,7 +431,7 @@ class Moderation(commands.Cog):
     
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(mute_members=True)
+    @commands.has_permissions(manage_messages=True)
     async def mute(self, ctx, member: discord.Member, *, reason="None", flags=None):
         """Mute a member in the server, to make the mute temporary, add the `-t` flag to the end.
         Usage examples:
@@ -467,7 +467,7 @@ class Moderation(commands.Cog):
     
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(mute_members=True)
+    @commands.has_permissions(manage_messages=True)
     async def unmute(self, ctx, member: discord.Member):
         """Unmute a member in the server."""
 
