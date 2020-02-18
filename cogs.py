@@ -90,8 +90,7 @@ class General(commands.Cog):
     @commands.command(description="Shows how long I've been online for")
     async def uptime(self, ctx):
         """View how long that bot has been online for."""
-        uptime = datetime.datetime.utcnow() - self.bot.start_time
-        s = uptime.total_seconds()
+        s = time.time() - self.bot.start_time
         m, s = divmod(s, 60)
         h, m = divmod(m, 60)
         d, h = divmod(h, 24)
@@ -461,7 +460,7 @@ class Moderation(commands.Cog):
                                   description=f"🙊 {member} was muted in all text channels for {str(total_time)} by {ctx.author.mention}. Reason: {reason}")
         else:
             await ctx.send(f"✅ {member} has been muted indefinitely. Reason: {reason}")
-            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR,
                                   description=f"🙊 {member} was muted in all text channels indefinitely by {ctx.author.mention}. Reason: {reason}")
         await self.log(embed)
     
