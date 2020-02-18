@@ -315,10 +315,10 @@ class Moderation(commands.Cog):
                 for w in warnings:
                     timestamp = w[-1]
                     self.bot.database.remove_warning(member, timestamp)
-                    await ctx.send(f"✅ All warnings for {member} have been removed.")
-                    embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
-                                          description=f"⚠️ {ctx.author.mention} removed all warnings from {member.mention}")
-                    await self.log(embed)
+                await ctx.send(f"✅ All warnings for {member} have been removed.")
+                embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                                        description=f"⚠️ {ctx.author.mention} removed all warnings from {member.mention}")
+                await self.log(embed)
             else:
                 raise ValueError("Warning ID must be a number.")
         else:
