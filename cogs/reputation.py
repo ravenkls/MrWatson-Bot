@@ -51,17 +51,17 @@ class Reputation(commands.Cog):
                 embed.add_field(name=str(member), value=points, inline=False)
         await ctx.send(embed=embed)
     
-    @commands.command()
+    @commands.command(aliases=["reps"])
     @commands.check(is_admin)
     @commands.guild_only()
-    async def reps(self, ctx, *, query: str=None):
+    async def setreps(self, ctx, *, query: str=None):
         """Configure the reputation points. (Admin only)
         
         Command options:
-        -reps set <member> <amount>
-        -reps remove <member> <amount>
-        -reps add <member> <amount>
-        -reps clear"""
+        -setreps set <member> <amount>
+        -setreps remove <member> <amount>
+        -setreps add <member> <amount>
+        -setreps clear"""
         if query is not None:
             args = [a.strip() for a in query.split()]
             if args[0].lower() in ["set", "remove", "add"]:
