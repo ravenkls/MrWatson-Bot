@@ -18,7 +18,8 @@ class Reputation(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        logging.info("Reputation cog initialised.")
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Reputation cog initialised.")
 
     @commands.command()
     @commands.guild_only()

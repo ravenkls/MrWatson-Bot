@@ -26,7 +26,8 @@ class Moderation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.check_expired_punishments.start()
-        logging.info("Moderation cog initialised.")
+        self.logger = logging.Logger(__name__)
+        self.logger.info("Moderation cog initialised.")
 
     @commands.command()
     @commands.has_permissions(administrator=True)
@@ -337,12 +338,12 @@ class Moderation(commands.Cog):
 
     @tasks.loop(minutes=1, reconnect=True)
     async def check_expired_punishments(self):
-        logging.debug('Checking for expired punishments')
+        self.logger.debug('Checking for expired punishments')
         punishments = self.bot.database.get_expired_punishments()
         if punishments:
-            logging.debug('Punishments found!')
+            self.logger.debug('Punishments found!')
         for p in punishments:
-            logging.debug(p)
+            self.logger.debug(p)
             member_id, guild_id, punishment_type = p
             guild = self.bot.get_guild(guild_id)
             if punishment_type == self.BAN:

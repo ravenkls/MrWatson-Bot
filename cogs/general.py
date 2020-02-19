@@ -15,7 +15,8 @@ class General(commands.Cog):
         self.bot = bot
         self.bot.remove_command("help")
         self.start_time = time.time()
-        logging.info("General cog initialised.")
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Reputation cog initialised.")
     
     def get_usage(self, command):
         """Get the usage details of a command."""
@@ -165,7 +166,7 @@ class General(commands.Cog):
     async def on_ready(self):
         game = discord.Activity(name="the server", type=discord.ActivityType.watching)
         await self.bot.change_presence(activity=game)
-        logging.info("Bot is online and ready!")
+        self.logger.info("Bot is online and ready!")
 
 
 def setup(bot):
