@@ -104,11 +104,11 @@ class General(commands.Cog):
             member = ctx.author
 
         embed = discord.Embed(title="User Details", colour=EMBED_ACCENT_COLOUR)
-        embed.set_author(name=member.name + "(" + str(member.id) + ")", icon_url=member.avatar_url_as(format='png', static_format='png'))
+        embed.set_author(name=member.name + " (" + str(member.id) + ")", icon_url=member.avatar_url_as(format='png', static_format='png'))
         embed.set_thumbnail(url=member.avatar_url_as(format='png', static_format='png'))
         embed.add_field(name="Guild Join Date", value=member.joined_at.strftime("%d %B %Y"), inline=True)
         embed.add_field(name="Account Creation Date", value=member.created_at.strftime("%d %B %Y"), inline=True)
-        embed.add_field(name="Roles", value=", ".join(map(str, member.roles)))
+        embed.add_field(name="Roles", value=", ".join(map(str, member.roles)), inline=False)
         await ctx.send(embed=embed)
         
     @commands.command(hidden=True)
