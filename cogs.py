@@ -93,6 +93,7 @@ class General(commands.Cog):
             embed = discord.Embed(title=f"Members with the Role {matched_role}",
                                   description="\n".join([m.mention for m in matched_role.members]),
                                   colour=EMBED_ACCENT_COLOUR)
+            embed.set_footer(text=f"{len(matched_role.members)} members in total")
             await ctx.send(embed=embed)
         else:
             await ctx.send("I could not find any roles matching your query.")
