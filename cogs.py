@@ -120,10 +120,7 @@ class General(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         """Pong!"""
-        pong_msg = await ctx.send(":ping_pong:  pong!")
-        diff = pong_msg.created_at - ctx.message.created_at
-        ms = int(diff.total_seconds() * 1000)
-        await pong_msg.edit(content=":ping_pong:  pong! `{}ms`".format(ms))
+        await ctx.send(f"🏓  pong! `{round(self.bot.latency*1000)}ms`")
 
     @commands.command(description="Shows how long I've been online for")
     async def uptime(self, ctx):
