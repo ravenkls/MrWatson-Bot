@@ -98,7 +98,20 @@ class General(commands.Cog):
         else:
             await ctx.send("I could not find any roles matching your query.")
 
-     
+    @commands.command()
+    async def userinfo(self, ctx, *, member: discord.Member=None):
+        if member is None:
+            member = ctx.author
+
+        embed = discord.Embed(title="User Details", colour=EMBED_ACCENT_COLOUR)
+        embed.set_author(member.name + "(" + str(member.id) + ")", icon_url=member.avatar_url_as(format='png', static_format='png'))
+        embed.set_thumbnail(url=member.avatar_url_as(format='png', static_format='png'))
+        embed.add_field(name="Guild Join Date", value=member.joined_at.strftime("%d %B %Y"), inline=True)
+        embed.add_field(name="Account Creation Date", value=member.created_at.strftime("%d %B %Y"), inline=True)
+        embed.add_field(name="Roles", value=", ".join(map(str, member.roles)))
+        await ctx.send(embed=embed)
+        
+
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -174,7 +187,7 @@ class Watson(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def rep(self, ctx, member: discord.Member):
+    async def rep(self, ctx, *, member: discord.Member):
         """Add a reputation point to a member."""
         if member.bot:
             raise Exception("You can't rep a bot!")
@@ -186,7 +199,7 @@ class Watson(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def repcount(self, ctx, member: discord.Member=None):
+    async def repcount(self, ctx, *, member: discord.Member=None):
         """View how many reputation points a user has."""
         if member is None:
             member = ctx.author
