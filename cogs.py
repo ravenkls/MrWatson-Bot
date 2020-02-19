@@ -6,6 +6,7 @@ import time
 
 import discord
 from discord.ext import commands, tasks
+from fuzzywuzzy import process
 
 from settings import *
 
@@ -80,6 +81,20 @@ class General(commands.Cog):
                 usage = self.get_usage(command)
                 help_embed.add_field(name="Usage", value="`" + usage + "`")
                 await ctx.send(embed=help_embed)
+
+    @commands.command()
+    async def list(self, ctx, *, role):
+        """List all the members of a role."""
+        names = [r.name for r in ctx.guild.roles][1:]
+        roles = [r for r in ctx.guild.roles][1:]
+        name, match = process.extractOne(role, names)
+        if match >= 75:
+            matched_role = roles[names.index(name)]
+            embed = discord.Embed(title=f"Members with the Role {matched_role}",
+                                  description="\n".join([m.mention for m in matched_role.members]))
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("I could not find any roles matching your query.")
 
     @commands.command(hidden=True)
     @commands.is_owner()

@@ -9,6 +9,7 @@ verify_ssl = true
 discord-py = "*"
 psycopg2 = "*"
 idna-ssl = "*"
+fuzzywuzzy = "*"
 
 [requires]
 python_version = "3.8"
