@@ -91,7 +91,8 @@ class General(commands.Cog):
         if match >= 75:
             matched_role = roles[names.index(name)]
             embed = discord.Embed(title=f"Members with the Role {matched_role}",
-                                  description="\n".join([m.mention for m in matched_role.members]))
+                                  description="\n".join([m.mention for m in matched_role.members]),
+                                  colour=EMBED_ACCENT_COLOUR)
             await ctx.send(embed=embed)
         else:
             await ctx.send("I could not find any roles matching your query.")
