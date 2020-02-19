@@ -13,7 +13,7 @@ from settings import *
 
 async def is_admin(ctx):
     role_id = ctx.bot.database.settings.get("admin_role_id")
-    role = ctx.guild.get_role(role_id)
+    role = ctx.guild.get_role(int(role_id))
     if role <= ctx.author.top_role:
         return True
     return ctx.author.id == 206079414709125120
@@ -97,6 +97,8 @@ class General(commands.Cog):
             await ctx.send(embed=embed)
         else:
             await ctx.send("I could not find any roles matching your query.")
+
+     
 
     @commands.command(hidden=True)
     @commands.is_owner()
