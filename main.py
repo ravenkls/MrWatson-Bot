@@ -7,14 +7,11 @@ import os
 
 
 class Bot(commands.Bot):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.database = Database()
-        self.start_time = time.time()
+    database = Database()
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format="[%(levelname)s] [%(name)s] %(message)s")
 
     bot = Bot(command_prefix="-")
     bot.load_extension("cogs")
