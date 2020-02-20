@@ -58,7 +58,7 @@ class Database:
     
     def add_role_reaction(self, message_id, emoji, role, nick):
         """Add a role reaction."""
-        self.cursor.execute("INSERT INTO assign_role_reactions (message_id, emoji, role_id) "
+        self.cursor.execute("INSERT INTO assign_role_reactions (message_id, emoji, role_id, nick) "
                             "VALUES (%s, %s, %s, %s);", (message_id, str(emoji), role.id, nick))
         self.conn.commit()
 
