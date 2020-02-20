@@ -73,8 +73,10 @@ class Helpers(commands.Cog):
             if not role.mentionable:
                 await role.edit(mentionable=True)
             await ctx.send(role.mention)
-            if not role.previous_setting:
+            if not previous_setting:
                 await role.edit(mentionable=previous_setting)
+        else:
+            await ctx.send("There are no helpers for this channel.")
 
     @commands.command(aliases=["reps"])
     @commands.check(is_admin)

@@ -325,7 +325,7 @@ class Moderation(commands.Cog):
         if not role.mentionable:
             await role.edit(mentionable=True)
         await ctx.send(role.mention)
-        if not role.previous_setting:
+        if not previous_setting:
             await role.edit(mentionable=previous_setting)
         await ctx.message.delete()
 
