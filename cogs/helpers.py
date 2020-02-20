@@ -129,7 +129,7 @@ class Helpers(commands.Cog):
     async def on_message(self, message):
         for role in message.role_mentions:
             if str(role.id) == self.bot.database.settings.get("helper_role_id"):
-                context = self.bot.get_context(message)
+                context = await self.bot.get_context(message)
                 await context.invoke(self.bot.get_command("helper"))
 
     @commands.command(aliases=["reps"])
