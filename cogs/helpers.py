@@ -69,7 +69,12 @@ class Helpers(commands.Cog):
         role_id = self.bot.database.get_helper_role(ctx.channel)
         if role_id:
             role = ctx.guild.get_role(role_id)
-            await ctx.invoke(self.bot.get_command("roleping"), role.mention)
+            previous_setting = role.mentionable
+            if not role.mentionable:
+                await role.edit(mentionable=True)
+            await ctx.send(role.mention)
+            if not role.previous_setting:
+                await role.edit(mentionable=previous_setting)
 
     @commands.command(aliases=["reps"])
     @commands.check(is_admin)
