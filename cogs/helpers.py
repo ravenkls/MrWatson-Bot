@@ -82,7 +82,7 @@ class Helpers(commands.Cog):
         role_mentions = []
         
         for r in role_ids:
-            role = ctx.guild.get_role(role_id)
+            role = ctx.guild.get_role(r)
             role_mentions.append(role.mention)
         
         if not role_ids:
