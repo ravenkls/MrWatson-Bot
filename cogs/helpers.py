@@ -104,7 +104,7 @@ class Helpers(commands.Cog):
         roles = [ctx.guild.get_role(r) for r in role_ids]
         role_mentions = []
         role_previous_setting = []
-        mention_everyone = ctx.channel.permissions_for(ctx.guild.get_member(self.bot.user.id)).mention_everyone
+        mention_everyone = False#ctx.channel.permissions_for(ctx.guild.get_member(self.bot.user.id)).mention_everyone
         
         for role in roles:
             if role is None:
