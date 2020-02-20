@@ -104,26 +104,30 @@ class Helpers(commands.Cog):
         roles = [ctx.guild.get_role(r) for r in role_ids]
         role_mentions = []
         role_previous_setting = []
+        mention_everyone = ctx.channel.permissions_for(ctx.guild.get_member(self.bot.user.id)).mention_everyone
         
         for role in roles:
             if role is None:
                 self.bot.database.remove_helper_role(ctx.channel, r)
                 continue
-            previous_setting = role.mentionable
-            if not role.mentionable:
-                await role.edit(mentionable=True)
+            if not mention_everyone:
+                previous_setting = role.mentionable
+                if not role.mentionable:
+                    await role.edit(mentionable=True)
+                role_previous_setting.append(previous_setting)
+
             role_mentions.append(role.mention)
-            role_previous_setting.append(previous_setting)    
         
         if not role_ids:
             await ctx.send("There are no helpers for this channel.")
         else:
             await ctx.send(' '.join(role_mentions))
-            for role in roles:
-                if role is None:
-                    continue
-                if previous_setting != role.mentionable:
-                    await role.edit(mentionable=previous_setting)
+            if not mention_everyone:
+                for role in roles:
+                    if role is None:
+                        continue
+                    if previous_setting != role.mentionable:
+                        await role.edit(mentionable=previous_setting)
 
     @commands.Cog.listener()
     async def on_message(self, message):
