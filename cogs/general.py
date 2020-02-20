@@ -16,7 +16,7 @@ class General(commands.Cog):
         self.bot.remove_command("help")
         self.start_time = time.time()
         self.logger = logging.getLogger(__name__)
-        self.logger.info("Reputation cog initialised.")
+        self.logger.info("General cog initialised.")
     
     def get_usage(self, command):
         """Get the usage details of a command."""

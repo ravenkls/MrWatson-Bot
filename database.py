@@ -23,6 +23,8 @@ class Database:
                             "(member_id BIGINT, guild_id BIGINT, type CHAR(1), expiry_date BIGINT);")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS helper_roles (guild_id BIGINT, channel_id BIGINT, role_id BIGINT);")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS assign_role_reactions "
+                            "(message_id BIGINT, emoji TEXT, role_id BIGINT);")
         self.conn.commit()
     
     def load_settings(self):
@@ -54,6 +56,26 @@ class Database:
         results = self.cursor.fetchall()
         return [r[0] for r in results]
     
+    def add_role_reaction(self, message_id, emoji, role):
+        """Add a role reaction."""
+        self.cursor.execute("INSERT INTO assign_role_reactions (message_id, emoji, role_id) "
+                            "VALUES (%s, %s, %s);", (message_id, str(emoji), role.id))
+        self.conn.commit()
+
+    def remove_role_reaction(self, message_id, emoji):
+        """Remove a role reaction."""
+        self.cursor.execute("DELETE FROM assign_role_reactions WHERE message_id=? AND emoji=?;",
+                            (message_id, str(emoji)))
+        self.conn.commit()
+    
+    def check_reaction(self, message_id, emoji):
+        """Check roles for a reaction to a message."""
+        self.cursor.execute("SELECT role_id FROM assign_role_reactions WHERE message_id=%s AND emoji=%s;",
+                            (message_id, str(emoji)))
+        results = self.cursor.fetchone()
+        if results:
+            return results[0]
+
     def remove_helper_role(self, channel, role_id):
         """Remove a helper role from a channel."""
         self.cursor.execute("DELETE FROM helper_roles WHERE guild_id=%s AND channel_id=%s AND role_id=%s;",

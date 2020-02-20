@@ -19,7 +19,7 @@ class Helpers(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.logger = logging.getLogger(__name__)
-        self.logger.info("Reputation cog initialised.")
+        self.logger.info("Helpers cog initialised.")
 
     @commands.command()
     @commands.guild_only()
