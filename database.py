@@ -39,23 +39,23 @@ class Database:
         self.conn.commit()
         self.settings[key] = value
 
-    def set_helper_role(self, channel, role):
-        """Set the helper role for a channel."""
-        if self.get_helper_role(channel):
-            self.cursor.execute("UPDATE helper_roles SET role_id=%s WHERE guild_id=%s AND channel_id=%s;", 
-                                (role.id, channel.guild.id, channel.id))
-        else:
-            self.cursor.execute("INSERT INTO helper_roles (guild_id, channel_id, role_id) VALUES (%s, %s, %s);",
-                                (channel.guild.id, channel.id, role.id))
+    def add_helper_role(self, channel, role):
+        """Add a helper role for a channel."""
+        self.cursor.execute("INSERT INTO helper_roles (guild_id, channel_id, role_id) VALUES (%s, %s, %s);",
+                            (channel.guild.id, channel.id, role.id))
         self.conn.commit()
 
-    def get_helper_role(self, channel):
+    def get_helper_roles(self, channel):
         """Get the helper role for a channel."""
         self.cursor.execute("SELECT role_id FROM helper_roles WHERE guild_id=%s AND channel_id=%s",
                             (channel.guild.id, channel.id))
-        result = self.cursor.fetchone()
-        if result:
-            return result[0]
+        return self.cursor.fetchall()
+    
+    def remove_helper_role(self, channel, role):
+        """Remove a helper role from a channel."""
+        self.cursor.execute("DELETE FROM helper_roles WHERE guild_id=%s AND channel_id=%s AND role_id=%s;",
+                            (channel.guild.id, channel.id, role.id))
+        self.conn.commit()
 
     def new_punishment(self, member, punishment_type, expire_date):
         """Add temporary punishment to the database."""

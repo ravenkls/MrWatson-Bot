@@ -57,26 +57,36 @@ class Helpers(commands.Cog):
     @commands.command()
     @commands.check(is_admin)
     @commands.guild_only()
-    async def sethelperrole(self, ctx, *, role: discord.Role):
+    async def addhelperrole(self, ctx, *, role: discord.Role):
         """Set the helper role for a channel."""
-        self.bot.database.set_helper_role(ctx.channel, role)
-        await ctx.send(f"{role.mention} is now the helper role for this channel.")
+        if not role.mentionable:
+            await ctx.send("I cannot add a role that is not mentionable.")
+        else:
+            self.bot.database.add_helper_role(ctx.channel, role)
+            await ctx.send(f"{role.mention} is now a helper role for this channel.")
     
+    async def helperroles(self, ctx):
+        """Get all helper roles for a channel."""
+        helper_roles = self.bot.database.get_helper_roles(ctx.channel)
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=f"Helpers for {ctx.channel}",
+                              description="\n".join([ctx.guild.get_role(r).mention for r in helper_roles]))
+        await ctx.send(embed=embed)
+
     @commands.command(aliases=["helpme"])
     @commands.guild_only()
     async def helper(self, ctx):
         """Calls a helper if you need help, this command only works in subject channels."""
-        role_id = self.bot.database.get_helper_role(ctx.channel)
-        if role_id:
+        role_ids = self.bot.database.get_helper_roles(ctx.channel)
+        role_mentions = []
+        
+        for r in role_ids:
             role = ctx.guild.get_role(role_id)
-            previous_setting = role.mentionable
-            if not role.mentionable:
-                await role.edit(mentionable=True)
-            await ctx.send(role.mention)
-            if not previous_setting:
-                await role.edit(mentionable=previous_setting)
-        else:
+            role_mentions.append(role.mention)
+        
+        if not role_ids:
             await ctx.send("There are no helpers for this channel.")
+        else:
+            await ctx.send(' '.join(role_mentions))
 
     @commands.command(aliases=["reps"])
     @commands.check(is_admin)
