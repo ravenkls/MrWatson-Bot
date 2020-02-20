@@ -197,7 +197,7 @@ class Moderation(commands.Cog):
 
     @commands.command(aliases=["clear", "clean", "cls"])
     @commands.guild_only()
-    @commands.check(is_mod)
+    @commands.check(is_admin)
     async def purge(self, ctx, limit=100, member: discord.Member=None):
         """Remove messages from a channel."""
         if member is not None:
@@ -215,7 +215,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(is_mod)
+    @commands.check(is_admin)
     async def ban(self, ctx, member: discord.Member, *, reason="None", flags=None):
         """Ban a member from the server, to make the ban temporary, add the `-t` flag to the end.
         Usage examples:
@@ -336,7 +336,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(is_mod)
+    @commands.check(is_admin)
     async def kick(self, ctx, member: discord.Member, *, reason="None"):
         """Kick a member from the server."""
         if ctx.author.top_role <= member.top_role:
