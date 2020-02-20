@@ -49,7 +49,8 @@ class Database:
         """Get the helper role for a channel."""
         self.cursor.execute("SELECT role_id FROM helper_roles WHERE guild_id=%s AND channel_id=%s",
                             (channel.guild.id, channel.id))
-        return self.cursor.fetchall()
+        results = self.cursor.fetchall()
+        return [r[0] for r in results]
     
     def remove_helper_role(self, channel, role_id):
         """Remove a helper role from a channel."""
