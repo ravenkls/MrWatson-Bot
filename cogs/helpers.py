@@ -65,6 +65,8 @@ class Helpers(commands.Cog):
             self.bot.database.add_helper_role(ctx.channel, role)
             await ctx.send(f"{role.mention} is now a helper role for this channel.")
     
+    @commands.command()
+    @commands.guild_only()
     async def helperroles(self, ctx):
         """Get all helper roles for a channel."""
         helper_roles = self.bot.database.get_helper_roles(ctx.channel)
