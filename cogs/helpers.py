@@ -129,6 +129,20 @@ class Helpers(commands.Cog):
                     if previous_setting != role.mentionable:
                         await role.edit(mentionable=previous_setting)
 
+    @commands.command(hidden=True)
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def synchelperperms(self, ctx):
+        results = self.bot.database.cursor.execute("SELECT * FROM helper_roles;")
+        perm_overwrite = discord.PermissionOverwrite(read_messages=True)
+
+        for guild_id, channel_id, role_id in results:
+            channel = ctx.guild.get_channel(channel_id)
+            role = ctx.guild.get_role(role_id)
+            channel.set_permissions(role, overwrite=perm_overwrite)
+        
+        await ctx.send("Done!")
+
     @commands.Cog.listener()
     async def on_message(self, message):
         for role in message.role_mentions:
