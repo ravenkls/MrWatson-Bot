@@ -64,7 +64,7 @@ class Database:
 
     def remove_role_reaction(self, message_id, emoji):
         """Remove a role reaction."""
-        self.cursor.execute("DELETE FROM assign_role_reactions WHERE message_id=? AND emoji=?;",
+        self.cursor.execute("DELETE FROM assign_role_reactions WHERE message_id=%s AND emoji=%s;",
                             (message_id, str(emoji)))
         self.conn.commit()
     
