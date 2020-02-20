@@ -58,7 +58,7 @@ class Database:
     
     def add_role_reaction(self, message_id, emoji, role, nick):
         """Add a role reaction."""
-        self.cursor.execute("INSERT INTO assign_role_reactions (message_id, emoji, role_id, nick) "
+        self.cursor.execute("INSERT INTO assign_role_reactions (message_id, emoji, role_id, nick_addition) "
                             "VALUES (%s, %s, %s, %s);", (message_id, str(emoji), role.id, nick))
         self.conn.commit()
 
@@ -70,7 +70,7 @@ class Database:
     
     def check_reaction(self, message_id, emoji):
         """Check roles for a reaction to a message."""
-        self.cursor.execute("SELECT role_id, nick FROM assign_role_reactions WHERE message_id=%s AND emoji=%s;",
+        self.cursor.execute("SELECT role_id, nick_addition FROM assign_role_reactions WHERE message_id=%s AND emoji=%s;",
                             (message_id, str(emoji)))
         results = self.cursor.fetchone()
         return results
