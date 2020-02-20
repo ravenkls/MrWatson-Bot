@@ -150,13 +150,15 @@ class General(commands.Cog):
         error_embed = discord.Embed(colour=0xFF0000)
         if type(exception) == discord.ext.commands.errors.MissingRequiredArgument:
             arg = str(exception).split()[0]
-            error_embed.title = "Syntax Error"
+            error_embed.title = "Missing Required Argument"
             error_embed.description = "Usage: `{}`".format(self.get_usage(ctx.command))
             error_embed.set_footer(text="{} is a required argument".format(arg))
         elif type(exception) == discord.ext.commands.errors.BadArgument:
-            error_embed.title = "Syntax Error"
-            error_embed.description = "Usage: `{}`".format(self.get_usage(ctx.command))
-            error_embed.set_footer(text=str(exception))
+            error_embed.title = "Bad Argument"
+            error_embed.description = str(exception)
+        elif type(exception) == discord.errors.Forbidden:
+            error_embed.title = "Missing Permissions"
+            error_embed.description = "I don't have permission to carry out that action"
         else:
             error_embed.title = "Error"
             error_embed.description = "`" + str(exception) + "`"

@@ -41,8 +41,16 @@ class AssignRoles(commands.Cog):
             guild = self.bot.get_guild(payload.guild_id)
             role = guild.get_role(role_id)
             if not payload.member.bot:
-                await payload.member.add_roles(role)
-                await payload.member.edit(nick=payload.member.name + " || " + nick)
+                try:
+                    await payload.member.add_roles(role)
+                except discord.errors.Forbidden:
+                    self.logger.warning("Permission denied when adding roles.")
+                
+                try:
+                    await payload.member.edit(nick=payload.member.name + " || " + nick)
+                except discord.errors.Forbidden:
+                    self.logger.warning("Permission denied when setting nickname.")
+                
     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -52,8 +60,15 @@ class AssignRoles(commands.Cog):
             role = guild.get_role(role_id)
             member = guild.get_member(payload.user_id)
             if not member.bot:
-                await member.remove_roles(role)
-                await member.edit(nick=None)
+                try:
+                    await member.remove_roles(role)
+                except discord.errors.Forbidden:
+                    self.logger.warning("Permission denied when removing role.")
+                
+                try:
+                    await member.edit(nick=None)
+                except discord.errors.Forbidden:
+                    self.logger.warning("Permission denied when setting nickname.")
 
 def setup(bot):
     bot.add_cog(AssignRoles(bot))
