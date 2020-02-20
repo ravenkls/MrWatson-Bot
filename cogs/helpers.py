@@ -101,6 +101,7 @@ class Helpers(commands.Cog):
             role = ctx.guild.get_role(r)
             if role is None:
                 self.bot.database.remove_helper_role(ctx.channel, r)
+                continue
             role_mentions.append(role.mention)
         
         if not role_ids:
