@@ -31,7 +31,7 @@ class AssignRoles(commands.Cog):
     @commands.check(is_admin)
     async def removerolereaction(self, ctx, message_id, emoji):
         message = await ctx.channel.fetch_message(message_id)
-        self.bot.database.delete_role_reaction(message.id, emoji)
+        self.bot.database.remove_role_reaction(message.id, emoji)
         await message.remove_reaction(emoji, ctx.guild.get_member(self.bot.user.id))
     
     @commands.Cog.listener()
