@@ -18,6 +18,14 @@ async def is_admin(ctx):
     return ctx.author.id == 206079414709125120
 
 
+async def is_mod(ctx):
+    role_id = ctx.bot.database.settings.get("mod_role_id")
+    role = ctx.guild.get_role(int(role_id))
+    if role <= ctx.author.top_role:
+        return True
+    return ctx.author.id == 206079414709125120
+
+
 class Moderation(commands.Cog):
 
     BAN = "b"
@@ -32,10 +40,34 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
-    async def adminrole(self, ctx, *, role: discord.Role):
-        self.bot.database.set_setting("admin_role_guild_id", str(ctx.guild.id))
-        self.bot.database.set_setting("admin_role_id", str(role.id))
-        await ctx.send(f"✅ {role.mention} is now set as the admin role.")
+    async def adminrole(self, ctx, *, role: discord.Role=None):
+        if role is None:
+            role_id = ctx.bot.database.settings.get("admin_role_id")
+            role = ctx.guild.get_role(int(role_id))
+            if role:
+                await ctx.send(f"{role} is the admin role.")
+            else:
+                await ctx.send("The admin role is not set.")
+        else:
+            self.bot.database.set_setting("admin_role_guild_id", str(ctx.guild.id))
+            self.bot.database.set_setting("admin_role_id", str(role.id))
+            await ctx.send(f"✅ {role.mention} is now set as the admin role.")
+    
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    async def modrole(self, ctx, *, role: discord.Role=None):
+        if role is None:
+            role_id = ctx.bot.database.settings.get("mod_role_id")
+            role = ctx.guild.get_role(int(role_id))
+            if role:
+                await ctx.send(f"{role} is the mod role.")
+            else:
+                await ctx.send("The mod role is not set.")
+        else:
+            self.bot.database.set_setting("mod_role_guild_id", str(ctx.guild.id))
+            self.bot.database.set_setting("mod_role_id", str(role.id))
+            await ctx.send(f"✅ {role.mention} is now set as the mod role.")
     
     @commands.command(hidden=True)
     @commands.guild_only()
@@ -57,7 +89,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(kick_members=True)
+    @commands.check(is_mod)
     async def warn(self, ctx, member: discord.Member, *, reason: str="None"):
         """Warn a member of the server."""
         if ctx.author.top_role <= member.top_role:
@@ -73,7 +105,7 @@ class Moderation(commands.Cog):
 
     @commands.command(aliases=["warns"])
     @commands.guild_only()
-    @commands.has_permissions(kick_members=True)
+    @commands.check(is_mod)
     async def warnings(self, ctx, member: discord.Member, page: int=1):
         """Retrieve all the warnings that a user has been given."""
         warnings = self.bot.database.get_warnings(member)
@@ -106,7 +138,7 @@ class Moderation(commands.Cog):
 
     @commands.command(aliases=["removewarn", "warnremove"])
     @commands.guild_only()
-    @commands.has_permissions(kick_members=True)
+    @commands.check(is_mod)
     async def removewarning(self, ctx, member: discord.Member, warning_id):
         """Remove a warning given the warning ID. (See user warning list for warning IDs).
         
@@ -144,7 +176,7 @@ class Moderation(commands.Cog):
 
     @commands.command(aliases=["vckick"])
     @commands.guild_only()
-    @commands.has_permissions(kick_members=True)
+    @commands.check(is_mod)
     async def voicekick(self, ctx, member: discord.Member, *, reason: str="None"):
         """Kick a member from voice chat."""
         if member.voice is not None:
@@ -165,7 +197,7 @@ class Moderation(commands.Cog):
 
     @commands.command(aliases=["clear", "clean", "cls"])
     @commands.guild_only()
-    @commands.has_permissions(manage_messages=True)
+    @commands.check(is_mod)
     async def purge(self, ctx, limit=100, member: discord.Member=None):
         """Remove messages from a channel."""
         if member is not None:
@@ -183,7 +215,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(ban_members=True)
+    @commands.check(is_mod)
     async def ban(self, ctx, member: discord.Member, *, reason="None", flags=None):
         """Ban a member from the server, to make the ban temporary, add the `-t` flag to the end.
         Usage examples:
@@ -213,7 +245,7 @@ class Moderation(commands.Cog):
     
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(manage_messages=True)
+    @commands.check(is_mod)
     async def mute(self, ctx, member: discord.Member, *, reason="None", flags=None):
         """Mute a member in the server, to make the mute temporary, add the `-t` flag to the end.
         Usage examples:
@@ -249,7 +281,7 @@ class Moderation(commands.Cog):
     
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(manage_messages=True)
+    @commands.check(is_mod)
     async def unmute(self, ctx, member: discord.Member):
         """Unmute a member in the server."""
 
@@ -304,7 +336,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(kick_members=True)
+    @commands.check(is_mod)
     async def kick(self, ctx, member: discord.Member, *, reason="None"):
         """Kick a member from the server."""
         if ctx.author.top_role <= member.top_role:
@@ -318,7 +350,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @commands.check(is_admin)
     async def roleping(self, ctx, *, role: discord.Role):
         """Pings a Role that isn't pingable by everyone."""
         previous_setting = role.mentionable
@@ -395,7 +427,6 @@ class Moderation(commands.Cog):
             expiry_time = time.time() + total_time.total_seconds()
 
         return reason, total_time, expiry_time
-
 
 def setup(bot):
     bot.add_cog(Moderation(bot))
