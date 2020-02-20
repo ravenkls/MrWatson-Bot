@@ -40,8 +40,9 @@ class AssignRoles(commands.Cog):
         if role_id:
             guild = self.bot.get_guild(payload.guild_id)
             role = guild.get_role(role_id)
-            await payload.member.add_roles(role)
-            await payload.member.edit(nick=payload.member.name + " || " + nick)
+            if not payload.member.bot:
+                await payload.member.add_roles(role)
+                await payload.member.edit(nick=payload.member.name + " || " + nick)
     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -50,8 +51,9 @@ class AssignRoles(commands.Cog):
             guild = self.bot.get_guild(payload.guild_id)
             role = guild.get_role(role_id)
             member = guild.get_member(payload.user_id)
-            await member.remove_roles(role)
-            await member.edit(nick=None)
+            if not member.bot:
+                await member.remove_roles(role)
+                await member.edit(nick=None)
 
 def setup(bot):
     bot.add_cog(AssignRoles(bot))
