@@ -61,7 +61,7 @@ class Helpers(commands.Cog):
         """Sets the global helper role."""
         self.bot.database.set_setting("helper_role_guild_id", str(ctx.guild.id))
         self.bot.database.set_setting("helper_role_id", str(role.id))
-        await ctx.send(f"✅ {role.mention} is now set as the admin role.")
+        await ctx.send(f"✅ {role.mention} is now set as the helper role.")
 
     @commands.command()
     @commands.check(is_admin)
@@ -124,6 +124,13 @@ class Helpers(commands.Cog):
                     continue
                 if previous_setting != role.mentionable:
                     await role.edit(mentionable=previous_setting)
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        for role in message.role_mentions:
+            if str(role.id) == self.bot.database.settings.get("helper_role_id"):
+                context = self.bot.get_context(message)
+                await context.invoke(self.bot.get_command("helper"))
 
     @commands.command(aliases=["reps"])
     @commands.check(is_admin)
