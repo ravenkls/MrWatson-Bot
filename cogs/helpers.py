@@ -59,7 +59,7 @@ class Helpers(commands.Cog):
     @commands.guild_only()
     async def sethelperrole(self, ctx, *, role: discord.Role):
         """Set the helper role for a channel."""
-        self.bot.database.set_helper_role(role)
+        self.bot.database.set_helper_role(ctx.channel, role)
         await ctx.send(f"{role.mention} is now the helper role for this channel.")
     
     @commands.command(aliases=["helpme"])
