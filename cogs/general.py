@@ -57,7 +57,8 @@ class General(commands.Cog):
             for cog_name, cog in self.bot.cogs.items():
                 cmds = cog.get_commands()
                 if cmds:
-                    help_embed.add_field(name=cog_name, value="\n".join("`{0.name}`".format(c) for c in cmds if not c.hidden))
+                    if any(not c.hidden for c in cmds):
+                        help_embed.add_field(name=cog_name, value="\n".join("`{0.name}`".format(c) for c in cmds if not c.hidden))
             await ctx.author.send(embed=help_embed)
             await ctx.message.add_reaction("\U0001F4EC")
         else:
