@@ -22,6 +22,7 @@ class Database:
         self.cursor.execute("CREATE TABLE IF NOT EXISTS temporary_punishments "
                             "(member_id BIGINT, guild_id BIGINT, type CHAR(1), expiry_date BIGINT);")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS helper_roles (guild_id BIGINT, channel_id BIGINT, role_id BIGINT);")
         self.conn.commit()
     
     def load_settings(self):
@@ -37,6 +38,24 @@ class Database:
             self.cursor.execute("INSERT INTO settings (key, value) VALUES (%s, %s);", (key, value))
         self.conn.commit()
         self.settings[key] = value
+
+    def set_helper_role(self, channel, role):
+        """Set the helper role for a channel."""
+        if self.get_helper_role(channel):
+            self.cursor.execute("UPDATE helper_roles SET role_id=%s WHERE guild_id=%s AND channel_id=%s;", 
+                                (role.id, channel.guild.id, channel.id))
+        else:
+            self.cursor.execute("INSERT INTO helper_roles (guild_id, channel_id, role_id) VALUES (%s, %s, %s);",
+                                (channel.guild.id, channel.id, role.id))
+        self.conn.commit()
+
+    def get_helper_role(self, channel):
+        """Get the helper role for a channel."""
+        self.cursor.execute("SELECT role_id FROM helper_roles WHERE guild_id=%s AND channel_id=%s",
+                            (channel.guild.id, channel.id))
+        result = self.cursor.fetchone()
+        if result:
+            return result[0]
 
     def new_punishment(self, member, punishment_type, expire_date):
         """Add temporary punishment to the database."""

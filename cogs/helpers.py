@@ -14,7 +14,7 @@ async def is_admin(ctx):
     return ctx.author.id == 206079414709125120
 
 
-class Reputation(commands.Cog):
+class Helpers(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -54,6 +54,23 @@ class Reputation(commands.Cog):
                 embed.add_field(name=str(member), value=points, inline=False)
         await ctx.send(embed=embed)
     
+    @commands.command()
+    @commands.check(is_admin)
+    @commands.guild_only()
+    async def sethelperrole(self, ctx, *, role: discord.Role):
+        """Set the helper role for a channel."""
+        self.bot.database.set_helper_role(role)
+        await ctx.send(f"{role.mention} is now the helper role for this channel.")
+    
+    @commands.command(aliases=["helpme"])
+    @commands.guild_only()
+    async def helper(self, ctx):
+        """Calls a helper if you need help, this command only works in subject channels."""
+        role_id = self.bot.database.get_helper_role(ctx.channel)
+        if role_id:
+            role = ctx.guild.get_role(role_id)
+            await ctx.invoke("roleping", role.mention)
+
     @commands.command(aliases=["reps"])
     @commands.check(is_admin)
     @commands.guild_only()
@@ -122,4 +139,4 @@ class Reputation(commands.Cog):
             await temp.delete()
 
 def setup(bot):
-    bot.add_cog(Reputation(bot))
+    bot.add_cog(Helpers(bot))
