@@ -34,7 +34,7 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     async def adminrole(self, ctx, *, role: discord.Role):
         self.bot.database.set_setting("admin_role_guild_id", str(ctx.guild.id))
-        self.bot.database.set_setting("admin_role_id", str(ctx.guild.id))
+        self.bot.database.set_setting("admin_role_id", str(role.id))
         await ctx.send(f"✅ {role.mention} is now set as the admin role.")
     
     @commands.command(hidden=True)

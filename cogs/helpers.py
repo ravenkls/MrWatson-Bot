@@ -54,16 +54,22 @@ class Helpers(commands.Cog):
                 embed.add_field(name=str(member), value=points, inline=False)
         await ctx.send(embed=embed)
     
+    @commands.command(hidden=True)
+    @commands.check(is_admin)
+    @commands.guild_only()
+    async def setglobalhelperrole(self, ctx, *, role: discord.Role):
+        """Sets the global helper role."""
+        self.bot.database.set_setting("helper_role_guild_id", str(ctx.guild.id))
+        self.bot.database.set_setting("helper_role_id", str(ctx.guild.id))
+        await ctx.send(f"✅ {role.mention} is now set as the admin role.")
+
     @commands.command()
     @commands.check(is_admin)
     @commands.guild_only()
     async def addhelperrole(self, ctx, *, role: discord.Role):
         """Add a helper role to a channel."""
-        if not role.mentionable:
-            await ctx.send("I cannot add a role that is not mentionable.")
-        else:
-            self.bot.database.add_helper_role(ctx.channel, role)
-            await ctx.send(f"{role.mention} is now a helper role for this channel.")
+        self.bot.database.add_helper_role(ctx.channel, role)
+        await ctx.send(f"{role.mention} is now a helper role for this channel.")
     
     @commands.command()
     @commands.check(is_admin)
@@ -82,7 +88,7 @@ class Helpers(commands.Cog):
         for r in helper_roles:
             role = ctx.guild.get_role(r)
             if role:
-                string += role.mention + "\n"
+                string += role.name + "\n"
             else:
                 self.bot.database.remove_helper_role(ctx.channel, r)
             
@@ -95,19 +101,29 @@ class Helpers(commands.Cog):
     async def helper(self, ctx):
         """Calls a helper if you need help, this command only works in subject channels."""
         role_ids = self.bot.database.get_helper_roles(ctx.channel)
+        roles = [ctx.guild.get_role(r) for r in role_ids]
         role_mentions = []
+        role_previous_setting = []
         
-        for r in role_ids:
-            role = ctx.guild.get_role(r)
+        for role in roles:
             if role is None:
                 self.bot.database.remove_helper_role(ctx.channel, r)
                 continue
+            previous_setting = role.mentionable
+            if not role.mentionable:
+                await role.edit(mentionable=True)
             role_mentions.append(role.mention)
+            role_previous_setting.append(previous_setting)    
         
         if not role_ids:
             await ctx.send("There are no helpers for this channel.")
         else:
             await ctx.send(' '.join(role_mentions))
+            for role in roles:
+                if role is None:
+                    continue
+                if previous_setting != role.mentionable:
+                    await role.edit(mentionable=previous_setting)
 
     @commands.command(aliases=["reps"])
     @commands.check(is_admin)
