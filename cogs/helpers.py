@@ -60,7 +60,7 @@ class Helpers(commands.Cog):
     async def setglobalhelperrole(self, ctx, *, role: discord.Role):
         """Sets the global helper role."""
         self.bot.database.set_setting("helper_role_guild_id", str(ctx.guild.id))
-        self.bot.database.set_setting("helper_role_id", str(ctx.guild.id))
+        self.bot.database.set_setting("helper_role_id", str(role.id))
         await ctx.send(f"✅ {role.mention} is now set as the admin role.")
 
     @commands.command()
