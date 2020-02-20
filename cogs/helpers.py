@@ -69,7 +69,7 @@ class Helpers(commands.Cog):
         role_id = self.bot.database.get_helper_role(ctx.channel)
         if role_id:
             role = ctx.guild.get_role(role_id)
-            await ctx.invoke("roleping", role.mention)
+            await ctx.invoke(self.bot.get_command("roleping"), role.mention)
 
     @commands.command(aliases=["reps"])
     @commands.check(is_admin)
