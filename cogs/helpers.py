@@ -140,7 +140,7 @@ class Helpers(commands.Cog):
         for guild_id, channel_id, role_id in results:
             channel = ctx.guild.get_channel(channel_id)
             role = ctx.guild.get_role(role_id)
-            channel.set_permissions(role, overwrite=perm_overwrite)
+            await channel.set_permissions(role, overwrite=perm_overwrite)
         
         await ctx.send("Done!")
 
