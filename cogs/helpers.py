@@ -58,7 +58,7 @@ class Helpers(commands.Cog):
     @commands.check(is_admin)
     @commands.guild_only()
     async def addhelperrole(self, ctx, *, role: discord.Role):
-        """Set the helper role for a channel."""
+        """Add a helper role to a channel."""
         if not role.mentionable:
             await ctx.send("I cannot add a role that is not mentionable.")
         else:
@@ -66,12 +66,28 @@ class Helpers(commands.Cog):
             await ctx.send(f"{role.mention} is now a helper role for this channel.")
     
     @commands.command()
+    @commands.check(is_admin)
+    @commands.guild_only()
+    async def removehelperrole(self, ctx, *, role: discord.Role):
+        """Remove a helper role from a channel."""
+        self.bot.database.remove_helper_role(ctx.channel, role.id)
+        await ctx.send(f"{role.mention} is no longer a helper role for this channel.")
+
+    @commands.command()
     @commands.guild_only()
     async def helperroles(self, ctx):
         """Get all helper roles for a channel."""
+        string = ""
         helper_roles = self.bot.database.get_helper_roles(ctx.channel)
+        for r in helper_roles:
+            role = ctx.guild.get_role(r)
+            if role:
+                string += role.mention + "\n"
+            else:
+                self.bot.database.remove_helper_role(ctx.channel, r)
+            
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=f"Helpers for {ctx.channel}",
-                              description="\n".join([ctx.guild.get_role(r).mention for r in helper_roles]))
+                              description=string)
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["helpme"])
@@ -83,6 +99,8 @@ class Helpers(commands.Cog):
         
         for r in role_ids:
             role = ctx.guild.get_role(r)
+            if role is None:
+                self.bot.remove_helper_role(ctx.channel, r)
             role_mentions.append(role.mention)
         
         if not role_ids:

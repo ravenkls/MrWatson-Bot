@@ -51,10 +51,10 @@ class Database:
                             (channel.guild.id, channel.id))
         return self.cursor.fetchall()
     
-    def remove_helper_role(self, channel, role):
+    def remove_helper_role(self, channel, role_id):
         """Remove a helper role from a channel."""
         self.cursor.execute("DELETE FROM helper_roles WHERE guild_id=%s AND channel_id=%s AND role_id=%s;",
-                            (channel.guild.id, channel.id, role.id))
+                            (channel.guild.id, channel.id, role_id))
         self.conn.commit()
 
     def new_punishment(self, member, punishment_type, expire_date):
