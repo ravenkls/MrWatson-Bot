@@ -160,7 +160,7 @@ class General(commands.Cog):
             error_embed.title = "Missing Permissions"
             error_embed.description = "I don't have permission to carry out that action"
         else:
-            error_embed.title = "Error"
+            error_embed.title = str(type(exception))
             error_embed.description = "`" + str(exception) + "`"
         if error_embed.description is not None:
             return await ctx.send(embed=error_embed)
