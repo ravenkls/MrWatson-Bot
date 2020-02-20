@@ -148,6 +148,10 @@ class General(commands.Cog):
         if type(exception) == discord.ext.commands.errors.CheckFailure:
             return
         error_embed = discord.Embed(colour=0xFF0000)
+
+        error_embed.title = type(exception).__name__
+        error_embed.description = "`" + str(exception) + "`"
+
         if type(exception) == discord.ext.commands.errors.MissingRequiredArgument:
             arg = str(exception).split()[0]
             error_embed.title = "Missing Required Argument"
@@ -156,12 +160,11 @@ class General(commands.Cog):
         elif type(exception) == discord.ext.commands.errors.BadArgument:
             error_embed.title = "Bad Argument"
             error_embed.description = str(exception)
-        elif type(exception) == discord.errors.Forbidden:
-            error_embed.title = "Missing Permissions"
-            error_embed.description = "I don't have permission to carry out that action"
-        else:
-            error_embed.title = str(type(exception))
-            error_embed.description = "`" + str(exception) + "`"
+        elif type(exception) == discord.ext.commands.CommandInvokeError:
+            if type(exception.original) == discord.errors.Forbidden:
+                error_embed.title = "Missing Permissions"
+                error_embed.description = "I don't have permission to carry out that action"
+            
         if error_embed.description is not None:
             return await ctx.send(embed=error_embed)
 
