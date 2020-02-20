@@ -38,14 +38,16 @@ class AssignRoles(commands.Cog):
     async def on_raw_reaction_add(self, payload):
         role_id = self.bot.database.check_reaction(payload.message_id, payload.emoji)
         if role_id:
-            role = ctx.guild.get_role(role_id)
+            guild = self.bot.get_guild(payload.guild_id)
+            role = guild.get_role(role_id)
             await payload.member.add_roles(role)
     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
         role_id = self.bot.database.check_reaction(payload.message_id, payload.emoji)
         if role_id:
-            role = ctx.guild.get_role(role_id)
+            guild = self.bot.get_guild(payload.guild_id)
+            role = guild.get_role(role_id)
             await payload.member.remove_roles(role)
 
 def setup(bot):
