@@ -17,5 +17,5 @@ if __name__ == '__main__':
     bot.load_extension("cogs.general")
     bot.load_extension("cogs.moderation")
     bot.load_extension("cogs.helpers")
-    bot.load_extension("cogs.asignroles")
+    bot.load_extension("cogs.assignroles")
     bot.run(DISCORD_TOKEN)
