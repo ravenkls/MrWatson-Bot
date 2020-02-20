@@ -158,7 +158,7 @@ class General(commands.Cog):
             error_embed.set_footer(text=str(exception))
         else:
             error_embed.title = "Error"
-            error_embed.description = "`" + str(exception).split(":")[-1] + "`"
+            error_embed.description = "`" + str(exception) + "`"
         if error_embed.description is not None:
             return await ctx.send(embed=error_embed)
 
