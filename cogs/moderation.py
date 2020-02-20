@@ -319,7 +319,7 @@ class Moderation(commands.Cog):
     @commands.check(is_admin)
     async def muterole(self, ctx, role: discord.Role):
         """Set the mute role."""
-        text_overwrite = discord.PermissionOverwrite(send_messages=False)
+        text_overwrite = discord.PermissionOverwrite(send_messages=False, add_reactions=False)
         voice_overwrite = discord.PermissionOverwrite(speak=False)
 
         msg = await ctx.send("🔄 Setting up permissions...")
