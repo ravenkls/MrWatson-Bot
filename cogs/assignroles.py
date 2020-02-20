@@ -36,8 +36,9 @@ class AssignRoles(commands.Cog):
     
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        role_id, nick = self.bot.database.check_reaction(payload.message_id, payload.emoji)
-        if role_id:
+        check = self.bot.database.check_reaction(payload.message_id, payload.emoji)
+        if check:
+            role_id, nick = check
             guild = self.bot.get_guild(payload.guild_id)
             role = guild.get_role(role_id)
             if not payload.member.bot:
@@ -54,8 +55,9 @@ class AssignRoles(commands.Cog):
     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
-        role_id, nick = self.bot.database.check_reaction(payload.message_id, payload.emoji)
-        if role_id:
+        check = self.bot.database.check_reaction(payload.message_id, payload.emoji)
+        if check:
+            role_id, nick = check
             guild = self.bot.get_guild(payload.guild_id)
             role = guild.get_role(role_id)
             member = guild.get_member(payload.user_id)
