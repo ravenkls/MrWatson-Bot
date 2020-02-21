@@ -40,15 +40,15 @@ class AssignRoles(commands.Cog):
     async def nickname(self, ctx, *, nickname=None):
         """Change your nickname, to remove your nickname just type `-nickname` on its own."""
         if nickname is None:
-            year = ctx.member.nick.split("||")[-1].strip()
-            if ctx.member.name + " || " + year == ctx.member.nick:
+            year = ctx.author.nick.split("||")[-1].strip()
+            if ctx.author.name + " || " + year == ctx.author.nick:
                 await ctx.send("You already have no nickname! To assign a nickname type `-nickname <nickname>`")
             else:
-                await ctx.member.edit(nick=ctx.member.name + " || " + year)
+                await ctx.author.edit(nick=ctx.author.name + " || " + year)
                 await ctx.send("Your nickname has been reset.")
         else:
-            year = ctx.member.nick.split("||")[-1].strip()
-            await ctx.member.edit(nick=nickname + " || " + year)
+            year = ctx.author.nick.split("||")[-1].strip()
+            await ctx.author.edit(nick=nickname + " || " + year)
             await ctx.send("Your nickname has been set!")
 
     @commands.Cog.listener()
