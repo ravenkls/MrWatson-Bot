@@ -99,9 +99,9 @@ class Database:
 
     def add_warning(self, member, author, reason):
         """Add a warning to a member."""
-        time = time.time()*100
+        t = time.time()*100
         self.cursor.execute("INSERT INTO warnings (member_id, author, reason, timestamp) "
-                            "VALUES (%s, %s, %s, %s);", (member.id, author.id, reason, time))
+                            "VALUES (%s, %s, %s, %s);", (member.id, author.id, reason, t))
         self.conn.commit()
     
     def remove_warning(self, member, timestamp):
