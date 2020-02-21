@@ -45,7 +45,7 @@ class AssignRoles(commands.Cog):
     @commands.command(aliases=["nick"])
     @commands.guild_only()
     @commands.check(is_mod)
-    async def nickname(self, ctx, *, member: discord.Member, nickname=None):
+    async def nickname(self, ctx, member: discord.Member, *, nickname=None):
         """Change someones nickname, to remove your nickname just type `-nickname` on its own."""
         if nickname is None:
             year = member.nick.split("||")[-1].strip()
