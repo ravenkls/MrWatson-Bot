@@ -89,22 +89,52 @@ class General(commands.Cog):
     @commands.command(aliases=["wiki"])
     async def wikipedia(self, ctx, *, query):
         """Search wikipedia with a query."""
-        wikipedia.set_lang("en")
-        page = wikipedia.page(query)
+        await ctx.trigger_typing()
 
-        summary = page.summary
-        if len(summary) > 300:
-            summary = summary[:300] + "..."
-        title = page.title
-        url = page.url
-        thumb = None
-        if page.images:
-            thumb = page.images[0]
+        async with aiohttp.ClientSession() as session:
+            params = {
+                "action": "query",
+                "list": "search",
+                "srprop": "",
+                "srlimit": 1,
+                "limit": 1,
+                "srsearch": query
+                "srinfo": "suggestion",
+                "format": "json"
+            }
 
+            async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
+                data = await r.json()
+                if not data["query"]["search"]:
+                    await ctx.send("I could not find any wikipedia pages with that query!")
+                    return
+                title = data["query"]["search"]["title"]
+                pageid = data["query"]["search"]["pageid"]
+
+            params = {"action": "query",
+                      "prop": "extracts",
+                      "explaintext": "",
+                      "exsentences": 1,
+                      "titles": title,
+                      "format": "json"}
+
+            async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
+                data = await r.json()
+                summary = data["query"]["pages"][str(pageid)]["extract"]
+
+            params = {"action": "query",
+                      "prop": "info",
+                      "inprop": "url",
+                      "redirects": "",
+                      "titles": title,
+                      "format": "json"}
+            
+            async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
+                data = await r.json()
+                url = data["query"]["pages"][str(pageid)]["fullurl"]
+            
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=title, description=summary)
         embed.set_author(name="Wikipedia", url=url, icon_url="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
-        if thumb:
-            embed.set_thumbnail(url=thumb)
         await ctx.send(embed=embed)
 
     @commands.command()
