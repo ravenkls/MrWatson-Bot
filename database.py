@@ -25,6 +25,8 @@ class Database:
         self.cursor.execute("CREATE TABLE IF NOT EXISTS helper_roles (guild_id BIGINT, channel_id BIGINT, role_id BIGINT);")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS assign_role_reactions "
                             "(message_id BIGINT, emoji TEXT, role_id BIGINT, nick_addition TEXT);")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS demographic_roles "
+                            "(role_id BIGINT PRIMARY KEY);")
         self.conn.commit()
     
     def load_settings(self):
@@ -40,6 +42,20 @@ class Database:
             self.cursor.execute("INSERT INTO settings (key, value) VALUES (%s, %s);", (key, value))
         self.conn.commit()
         self.settings[key] = value
+
+    def add_demographic_role(self, role):
+        self.cursor.execute("INSERT INTO demographic_roles (role_id) VALUES (%s);", (role.id,))
+        self.conn.commit()
+    
+    def remove_demographic_role(self, role):
+        self.cursor.execute("DELETE FROM demographic_roles WHERE role_id=%s", (role.id,))
+        self.conn.commit()
+
+    def get_demographic_roles(self):
+        self.cursor.execute("SELECT role_id FROM demographic_roles;")
+        result = self.cursor.fetchall()
+        if result:
+            return [r[0] for r in result]
 
     def add_helper_role(self, channel, role):
         """Add a helper role for a channel."""

@@ -10,6 +10,14 @@ import aiohttp
 from settings import *
 
 
+async def is_admin(ctx):
+    role_id = ctx.bot.database.settings.get("admin_role_id")
+    role = ctx.guild.get_role(int(role_id))
+    if role <= ctx.author.top_role:
+        return True
+    return ctx.author.id == 206079414709125120
+
+
 class General(commands.Cog):
 
     def __init__(self, bot):
@@ -176,6 +184,32 @@ class General(commands.Cog):
             
         if error_embed.description is not None:
             return await ctx.send(embed=error_embed)
+
+    @commands.command()
+    @commands.guild_only()
+    async def demographics(self, ctx):
+        roles = self.bot.database.get_demographic_roles()
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title="Demographics for {ctx.guild.name}")
+        string = ""
+        for r_id in roles:
+            role = ctx.guild.get_role(r_id)
+            string += f"{role.name}: {len(role.members)}\n"
+        embed.description = string
+        await ctx.send(embed=embed)
+    
+    @commands.command(hidden=True)
+    @commands.guild_only()
+    @commands.check(is_admin)
+    async def adddemographicsrole(self, ctx, *, role: discord.Role):
+        self.bot.database.add_demographic_role(role)
+        await ctx.send(f"{role} has been added.")
+    
+    @commands.command(hidden=True)
+    @commands.guild_only()
+    @commands.check(is_admin)
+    async def removedemographicsrole(self, ctx, *, role: discord.Role):
+        self.bot.database.remove_demographic_role(role)
+        await ctx.send(f"{role} has been removed.")
 
     @commands.Cog.listener()
     async def on_ready(self):
