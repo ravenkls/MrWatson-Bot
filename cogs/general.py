@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 from fuzzywuzzy import process
 import aiohttp
+import aiowiki
 
 from settings import *
 
@@ -85,6 +86,24 @@ class General(commands.Cog):
                 help_embed.add_field(name="Usage", value="`" + usage + "`")
                 await ctx.send(embed=help_embed)
 
+    @commands.command(aliases=["wiki"])
+    async def wikipedia(self, ctx, *, query):
+        async with aiowiki.Wiki.wikipedia("en") as wiki:
+            pages = await wiki.opensearch(query)
+            if not pages:
+                await ctx.send("I couldn't find any wikipedia page with the query \"{query\"")
+                return
+            
+            page = pages[0]
+            summary = await page.summary()
+            title = page.title
+            urls = await page.urls()
+            view_url = urls.view
+        
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=title, description=summary)
+        embed.set_author(name="Wikipedia", url=view_url, icon_url="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
+        await ctx.send(embed=embed)
+        
     @commands.command()
     async def list(self, ctx, *, role):
         """List all the members of a role."""
