@@ -112,7 +112,7 @@ class Database:
     
     def get_warnings(self, member):
         """Retrieve all warnings given to a user."""
-        self.cursor.execute("SELECT author, reason, timestamp FROM warnings WHERE member_id=%s;", (member.id,))
+        self.cursor.execute("SELECT author, reason, timestamp FROM warnings WHERE member_id=%s ORDER BY timestamp DESC;", (member.id,))
         
         warnings = []
         for result in self.cursor.fetchall():
