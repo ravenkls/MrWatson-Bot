@@ -85,7 +85,7 @@ class General(commands.Cog):
         name, match = process.extractOne(role, names)
         if match >= 75:
             matched_role = roles[names.index(name)]
-            embed = discord.Embed(title=f"Members with the Role {matched_role}",
+            embed = discord.Embed(title=f"Members with the role {matched_role}",
                                   description="\n".join([m.mention for m in matched_role.members]),
                                   colour=EMBED_ACCENT_COLOUR)
             embed.set_footer(text=f"{len(matched_role.members)} members in total")
