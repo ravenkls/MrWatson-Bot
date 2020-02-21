@@ -10,6 +10,7 @@ discord-py = "*"
 psycopg2 = "*"
 idna-ssl = "*"
 fuzzywuzzy = "*"
+aiohttp = {extras = ["speedups"],version = "*"}
 
 [requires]
 python_version = "3.8"

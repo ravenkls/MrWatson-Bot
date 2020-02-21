@@ -5,6 +5,7 @@ import time
 import discord
 from discord.ext import commands
 from fuzzywuzzy import process
+import aiohttp
 
 from settings import *
 
@@ -91,6 +92,14 @@ class General(commands.Cog):
             await ctx.send(embed=embed)
         else:
             await ctx.send("I could not find any roles matching your query.")
+
+    @commands.command()
+    async def factoftheday(self, ctx):
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://uselessfacts.jsph.pl/today.json?language=en') as response:
+                response = await response.json()
+        
+        await ctx.send(response["text"])
 
     @commands.command()
     async def userinfo(self, ctx, *, member: discord.Member=None):
