@@ -88,6 +88,7 @@ class General(commands.Cog):
 
     @commands.command(aliases=["wiki"])
     async def wikipedia(self, ctx, *, query):
+        """Search wikipedia with a query."""
         async with aiowiki.Wiki.wikipedia("en") as wiki:
             pages = await wiki.opensearch(query)
             if not pages:
@@ -103,7 +104,7 @@ class General(commands.Cog):
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=title, description=summary)
         embed.set_author(name="Wikipedia", url=view_url, icon_url="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
         await ctx.send(embed=embed)
-        
+
     @commands.command()
     async def list(self, ctx, *, role):
         """List all the members of a role."""
