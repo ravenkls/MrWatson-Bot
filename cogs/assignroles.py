@@ -12,6 +12,14 @@ async def is_admin(ctx):
     return ctx.author.id == 206079414709125120
 
 
+async def is_mod(ctx):
+    role_id = ctx.bot.database.settings.get("mod_role_id")
+    role = ctx.guild.get_role(int(role_id))
+    if role <= ctx.author.top_role:
+        return True
+    return ctx.author.id == 206079414709125120
+
+
 class AssignRoles(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -33,23 +41,23 @@ class AssignRoles(commands.Cog):
         message = await ctx.channel.fetch_message(message_id)
         self.bot.database.remove_role_reaction(message.id, emoji)
         await message.remove_reaction(emoji, ctx.guild.get_member(self.bot.user.id))
-    
+
     @commands.command(aliases=["nick"])
-    @commands.cooldown(rate=12, per=3600, type=commands.BucketType.user)
     @commands.guild_only()
-    async def nickname(self, ctx, *, nickname=None):
-        """Change your nickname, to remove your nickname just type `-nickname` on its own."""
+    @commands.check(is_mod)
+    async def nickname(self, ctx, *, member: discord.Member, nickname=None):
+        """Change someones nickname, to remove your nickname just type `-nickname` on its own."""
         if nickname is None:
-            year = ctx.author.nick.split("||")[-1].strip()
-            if ctx.author.name + " || " + year == ctx.author.nick:
-                await ctx.send("You already have no nickname! To assign a nickname type `-nickname <nickname>`")
+            year = member.nick.split("||")[-1].strip()
+            if member.name + " || " + year == member.nick:
+                await ctx.send(f"{member} already has no nickname! To assign a nickname type `-nickname <nickname>`")
             else:
-                await ctx.author.edit(nick=ctx.author.name + " || " + year)
-                await ctx.send("Your nickname has been reset.")
+                await member.edit(nick=member.name + " || " + year)
+                await ctx.send(f"{member}'s nickname has been reset.")
         else:
-            year = ctx.author.nick.split("||")[-1].strip()
-            await ctx.author.edit(nick=nickname + " || " + year)
-            await ctx.send("Your nickname has been set!")
+            year = member.nick.split("||")[-1].strip()
+            await member.edit(nick=nickname + " || " + year)
+            await ctx.send(f"{member}'s nickname has been set!")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
