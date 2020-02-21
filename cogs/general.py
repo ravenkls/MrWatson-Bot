@@ -98,7 +98,7 @@ class General(commands.Cog):
                 "srprop": "",
                 "srlimit": 1,
                 "limit": 1,
-                "srsearch": query
+                "srsearch": query,
                 "srinfo": "suggestion",
                 "format": "json"
             }
