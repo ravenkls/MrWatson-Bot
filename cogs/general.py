@@ -108,8 +108,8 @@ class General(commands.Cog):
                 if not data["query"]["search"]:
                     await ctx.send("I could not find any wikipedia pages with that query!")
                     return
-                title = data["query"]["search"]["title"]
-                pageid = data["query"]["search"]["pageid"]
+                title = data["query"]["search"][0]["title"]
+                pageid = data["query"]["search"][0]["pageid"]
 
             params = {"action": "query",
                       "prop": "extracts",
