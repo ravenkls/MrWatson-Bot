@@ -11,7 +11,7 @@ psycopg2 = "*"
 idna-ssl = "*"
 fuzzywuzzy = "*"
 aiohttp = {extras = ["speedups"],version = "*"}
-aiowiki = {git = "https://github.com/Gelbpunkt/aiowiki"}
+wikipedia = "*"
 
 [requires]
 python_version = "3.8"
