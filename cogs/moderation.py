@@ -128,7 +128,7 @@ class Moderation(commands.Cog):
             embed.set_footer(text=f"Page {page} of {pages}")
             for n, w in enumerate(warnings[(page-1)*6:page*6], start=(page-1)*6 + 1):
                 author_id, reason, timestamp = w
-                date = datetime.datetime.fromtimestamp(last_warning[2])
+                date = datetime.datetime.fromtimestamp(timestamp)
                 embed.add_field(name=f"{n}. {date.strftime('%d %B %Y %H:%M')}",
                                 value=f"Reason: {reason}\n"
                                       f"Given by: {ctx.guild.get_member(author_id)}", inline=True)
