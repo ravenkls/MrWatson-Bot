@@ -189,11 +189,11 @@ class General(commands.Cog):
     @commands.guild_only()
     async def demographics(self, ctx):
         roles = self.bot.database.get_demographic_roles()
-        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title="Demographics for {ctx.guild.name}")
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=f"Demographics for {ctx.guild.name}")
         string = ""
         for r_id in roles:
             role = ctx.guild.get_role(r_id)
-            string += f"{role.name}: {len(role.members)}\n"
+            string += f"**{role.name}**: {len(role.members)}\n"
         embed.description = string
         await ctx.send(embed=embed)
     
