@@ -117,19 +117,9 @@ class General(commands.Cog):
                 pageid = data["query"]["search"][0]["pageid"]
 
             params = {"action": "query",
-                      "prop": "extracts",
-                      "explaintext": "",
-                      "exsentences": 1,
-                      "titles": title,
-                      "format": "json"}
-
-            async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
-                data = await r.json()
-                summary = data["query"]["pages"][str(pageid)]["extract"]
-
-            params = {"action": "query",
-                      "prop": "info",
+                      "prop": "info|pageprops",
                       "inprop": "url",
+                      "ppprop": "disambiguation",
                       "redirects": "",
                       "titles": title,
                       "format": "json"}
@@ -137,10 +127,62 @@ class General(commands.Cog):
             async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
                 data = await r.json()
                 url = data["query"]["pages"][str(pageid)]["fullurl"]
+
+            if data.get("pageprops"):
+                async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
+                    data = await r.json()
+                    html = data['query']['pages'][str(pageid)]['revisions'][0]['*']
+                    soup = BeautifulSoup(html, "html.parser")
+                    lis = soup.find_all("li")
+                    filtered_lis = [li for li in lis if not "tocsection" in "".join(li.get("class", []))]
+                    may_refer_to = [li.a.get_text() for li in filtered_lis if li.a]
+                
+                embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=title,
+                                      description=f"{title} may refer to:\n\n" + 
+                                                  "\n".join([f"{n}. {r}" for r in enumerate(may_refer_to, start=1)]) + 
+                                                  "\n\nEnter the number of the wikipedia page you would like to see.")
+                embed.set_author(name="Wikipedia", url=url, icon_url="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
+                tmp = await ctx.send(embed=embed)
+
+                def check(m):
+                    if m.content.isdigit() and m.author == ctx.author and m.channel == ctx.channel:
+                        return 0 <= int(m.content)-1 <= len(may_refer_to)
+
+                try:
+                    response = await self.bot.wait_for("message", check=check, timeout=60)
+                except asyncio.TimeoutError:
+                    return
+                else:
+                    await tmp.delete()
+                    await response.delete()
+                    title = may_refer_to.index(int(response-1))
+
+                    params = {"action": "query",
+                      "prop": "info|pageprops",
+                      "inprop": "url",
+                      "ppprop": "disambiguation",
+                      "redirects": "",
+                      "titles": title,
+                      "format": "json"}
             
-        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=title, description=summary)
-        embed.set_author(name="Wikipedia", url=url, icon_url="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
-        await ctx.send(embed=embed)
+                    async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
+                        data = await r.json()
+                        url = data["query"]["pages"][str(pageid)]["fullurl"]
+
+            params = {"action": "query",
+                    "prop": "extracts",
+                    "explaintext": "",
+                    "exsentences": 1,
+                    "titles": title,
+                    "format": "json"}
+
+            async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
+                data = await r.json()
+                summary = data["query"]["pages"][str(pageid)]["extract"]
+        
+            embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=title, description=summary)
+            embed.set_author(name="Wikipedia", url=url, icon_url="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
+            await ctx.send(embed=embed)
 
     @commands.command()
     async def list(self, ctx, *, role):
