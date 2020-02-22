@@ -402,6 +402,14 @@ class Moderation(commands.Cog):
         embed = discord.Embed(colour=0xFF0000, title="Ongoing Punishments")
         for member_id, punishment_type, expiry_date in punishments:
             member = ctx.guild.get_member(member_id)
+            if not member and punishment_type == self.BAN:
+                bans = await guild.bans()
+                for b in bans:
+                    if b.user.id == member_id:
+                        member = b.user
+                        break
+                else:
+                    continue
             date = datetime.datetime.fromtimestamp(expiry_date)
             punishment_type = "MUTE" if punishment_type == self.MUTE else "BAN"
             embed.add_field(name=member.name, value=f"Punishment Type: {punishment_type}\n"
