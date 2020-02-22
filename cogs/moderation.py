@@ -404,7 +404,7 @@ class Moderation(commands.Cog):
         for member_id, punishment_type, expiry_date in punishments:
             member = ctx.guild.get_member(member_id)
             if not member and punishment_type == self.BAN:
-                bans = await guild.bans()
+                bans = await ctx.guild.bans()
                 for b in bans:
                     if b.user.id == member_id:
                         member = b.user
