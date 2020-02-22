@@ -128,7 +128,7 @@ class General(commands.Cog):
                 data = await r.json()
                 url = data["query"]["pages"][str(pageid)]["fullurl"]
 
-            if data.get("pageprops"):
+            if data["query"]["pages"][str(pageid)].get("pageprops"):
                 async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
                     data = await r.json()
                     html = data['query']['pages'][str(pageid)]['revisions'][0]['*']
