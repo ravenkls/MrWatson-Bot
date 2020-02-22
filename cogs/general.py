@@ -265,7 +265,7 @@ class General(commands.Cog):
 
         ax.set_title(f"Demographics for {guild.name}")
         ax.bar(x_pos, y)
-        ax.set_xticklabels(x_pos, x)
+        ax.set_xticklabels(x)
 
         image = BytesIO()
         fig.savefig(image, format='png', transparent=True)
