@@ -148,8 +148,8 @@ class General(commands.Cog):
                 
                 embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=title,
                                       description=f"{title} may refer to:\n\n" + 
-                                                  "\n".join([f"{n}. {r}" for n, r in enumerate(may_refer_to, start=1)]) + 
-                                                  "\n\nEnter the number of the wikipedia page you would like to see.")
+                                                  "\n".join([f"**{n}.** {r}" for n, r in enumerate(may_refer_to, start=1)]) + 
+                                                  "\n\n**Enter the number of the wikipedia page you would like to see.**")
                 embed.set_author(name="Wikipedia", url=url, icon_url="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
                 tmp = await ctx.send(embed=embed)
 
@@ -163,8 +163,11 @@ class General(commands.Cog):
                     return
                 else:
                     await tmp.delete()
-                    await response.delete()
-                    title = may_refer_to.index(int(response-1))
+                    try:
+                        await response.delete()
+                    except:
+                        pass
+                    title = may_refer_to.index(int(response.content)-1)
 
                     params = {"action": "query",
                       "prop": "info|pageprops",
