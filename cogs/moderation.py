@@ -310,6 +310,9 @@ class Moderation(commands.Cog):
         role = guild.get_role(int(self.bot.database.settings.get('mute_role_id')))
         if role in member.roles:
             await member.remove_roles(role)
+            self.bot.database.cursor.execute("DELETE FROM temporary_punishments WHERE member_id=%s AND guild_id=%s AND type=%s;",
+                                             (member.id, member.guild.id, self.MUTE))
+            self.bot.database.conn.commit()
             return True
         else:
             return False
