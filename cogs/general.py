@@ -167,8 +167,9 @@ class General(commands.Cog):
                         await response.delete()
                     except:
                         pass
-                    title = may_refer_to.index(int(response.content)-1)
 
+                    title = may_refer_to[int(response.content)-1]
+                    
                     params = {"action": "query",
                       "prop": "info|pageprops",
                       "inprop": "url",
