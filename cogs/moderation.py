@@ -272,11 +272,11 @@ class Moderation(commands.Cog):
             self.bot.database.new_punishment(member, self.MUTE, expiry_time)
             await ctx.send(f"✅ {member} has been muted for {str(total_time)}. Reason: {reason}")
             embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
-                                  description=f"🙊 {member} was muted in all text channels for {str(total_time)} by {ctx.author.mention}. Reason: {reason}")
+                                  description=f"🙊 {member.mention} was muted in all text channels for {str(total_time)} by {ctx.author.mention}. Reason: {reason}")
         else:
             await ctx.send(f"✅ {member} has been muted indefinitely. Reason: {reason}")
             embed = discord.Embed(colour=EMBED_ACCENT_COLOUR,
-                                  description=f"🙊 {member} was muted in all text channels indefinitely by {ctx.author.mention}. Reason: {reason}")
+                                  description=f"🙊 {member.mention} was muted in all text channels indefinitely by {ctx.author.mention}. Reason: {reason}")
         await self.log(embed)
     
     @commands.command()
