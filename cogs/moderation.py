@@ -391,7 +391,8 @@ class Moderation(commands.Cog):
                         break
             elif punishment_type == self.MUTE:
                 member = guild.get_member(member_id)
-                await self.unmute_member(member)
+                if member:
+                    await self.unmute_member(member)
 
     @commands.command()
     @commands.guild_only()
@@ -410,6 +411,8 @@ class Moderation(commands.Cog):
                         break
                 else:
                     continue
+            elif not member:
+                continue
             date = datetime.datetime.fromtimestamp(expiry_date)
             punishment_type = "MUTE" if punishment_type == self.MUTE else "BAN"
             embed.add_field(name=member.name, value=f"Punishment Type: {punishment_type}\n"
