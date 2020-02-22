@@ -169,7 +169,7 @@ class General(commands.Cog):
                         pass
 
                     title = may_refer_to[int(response.content)-1]
-                    
+
                     params = {"action": "query",
                       "prop": "info|pageprops",
                       "inprop": "url",
@@ -180,6 +180,7 @@ class General(commands.Cog):
             
                     async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
                         data = await r.json()
+                        pageid = int(data["query"]["pages"].keys()[0])
                         url = data["query"]["pages"][str(pageid)]["fullurl"]
 
             params = {"action": "query",
