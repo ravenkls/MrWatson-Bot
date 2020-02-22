@@ -112,6 +112,11 @@ class Database:
             self.cursor.execute("DELETE FROM temporary_punishments WHERE expiry_date < %s;", (time_now,))
             self.conn.commit()
         return expired
+    
+    def get_temporary_punishments(self):
+        """Get all active punishments"""
+        self.cursor.execute("SELECT member_id, type, expiry_date FROM temporary_punishments;")
+        return self.cursor.fetchall()
 
     def add_warning(self, member, author, reason):
         """Add a warning to a member."""

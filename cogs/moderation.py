@@ -393,6 +393,21 @@ class Moderation(commands.Cog):
                 member = guild.get_member(member_id)
                 await self.unmute_member(member)
 
+    @commands.command()
+    @commands.guild_only()
+    @commands.check(is_mod)
+    async def punishments(self, ctx):
+        """Get all ongoing punishments."""
+        punishments = self.bot.database.get_temporary_punishments()
+        embed = discord.Embed(colour=0xFF0000, title="Ongoing Punishments")
+        for member_id, punishment_type, expiry_date in punishments:
+            member = ctx.guild.get_member(member_id)
+            date = datetime.datetime.fromtimestamp(expiry_date)
+            punishment_type = "MUTE" if punishment_type == self.MUTE else "BAN"
+            embed.add_field(name=member.name, value=f"Punishment Type: {punishment_type}\n"
+                                                    f"Expiry Date: {date.strftime('%d %B %Y %H:%M')}")
+        await ctx.send(embed=embed)
+
     async def log(self, embed):
         """Log messages if the log channel is enabled."""
         guild_id = self.bot.database.settings.get('log_guild_id')
