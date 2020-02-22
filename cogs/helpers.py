@@ -189,7 +189,7 @@ class Helpers(commands.Cog):
                     new_points = self.bot.database.add_rep(member, amount=amount)
                     embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                           description=f"🏅 {ctx.author.mention} added {amount} reputation points from {member.mention}")
-                await self.log(embed)
+                await self.bot.get_cog("Moderation").log(embed)
                 await ctx.send(f"✅ **{member}** now has `{new_points}` reputation points!")
             elif args[0].lower() == "clear":
                 await self.remove_all_reps(ctx)
@@ -209,7 +209,7 @@ class Helpers(commands.Cog):
             self.bot.database.clear_reputations()
             embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                   description=f"🏅 {ctx.author.mention} removed ALL reputation points")
-            await self.log(embed)
+            await self.bot.get_cog("Moderation").log(embed)
             await response.delete()
             await ctx.send("✅ All reputation points have been cleared.")
             if ctx.author != ctx.guild.owner:
