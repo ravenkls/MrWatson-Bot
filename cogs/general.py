@@ -240,15 +240,32 @@ class General(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def demographics(self, ctx):
+        await ctx.trigger_typing()
         roles = self.bot.database.get_demographic_roles()
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=f"Demographics for {ctx.guild.name}")
-        string = ""
-        for r_id in roles:
-            role = ctx.guild.get_role(r_id)
-            string += f"**{role.name}**: {len(role.members)}\n"
-        embed.description = string
-        await ctx.send(embed=embed)
+        role_names = [r.name for r in roles]
+        role_numbers = [len(role.members) for r in roles]
+        demographics_graph = self.get_demographics_graph(ctx.guild, role_names, role_numbers)
+        await ctx.send(content=f"{sum(role_numbers)} members in total", file=discord.File(demographics_graph, filename='demographics.png'))
     
+    async def get_demographics_graph(self, guild, names, numbers):
+        fig = plt.figure()
+
+        x = names
+        y = numbers
+        x_pos = [i for i, _ in enumerate(x)]
+
+        ax = fig.add_subplot(111)
+
+        ax.set_title(f"Demographics for {guild.name}")
+        ax.bar(x_pos, y)
+        ax.xticks(x_pos, x)
+
+        image = BytesIO()
+        fig.savefig(image, format='png', transparent=True)
+        image.seek(0)
+        return image
+
     @commands.command(hidden=True)
     @commands.guild_only()
     @commands.check(is_admin)

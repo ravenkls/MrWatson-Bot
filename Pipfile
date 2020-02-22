@@ -12,6 +12,7 @@ idna-ssl = "*"
 fuzzywuzzy = "*"
 aiohttp = {extras = ["speedups"],version = "*"}
 wikipedia = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.8"
