@@ -129,9 +129,16 @@ class General(commands.Cog):
                 url = data["query"]["pages"][str(pageid)]["fullurl"]
 
             if data["query"]["pages"][str(pageid)].get("pageprops"):
+
+                params = {"action": "query",
+                          "prop": "revisions",
+                          "rvprop": "content",
+                          "rvparse": "",
+                          "titles": title}
+                          
                 async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
                     data = await r.json()
-                    html = data['query']['pages'][str(pageid)]['revisions'][0]['*']
+                    html = data["query"]["pages"][str(pageid)]["revisions"][0]["*"]
                     soup = BeautifulSoup(html, "html.parser")
                     lis = soup.find_all("li")
                     filtered_lis = [li for li in lis if not "tocsection" in "".join(li.get("class", []))]
