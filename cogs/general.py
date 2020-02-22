@@ -245,11 +245,13 @@ class General(commands.Cog):
     @commands.guild_only()
     async def demographics(self, ctx):
         await ctx.trigger_typing()
-        roles = self.bot.database.get_demographic_roles()
-        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=f"Demographics for {ctx.guild.name}")
+
+        role_ids = self.bot.database.get_demographic_roles()
+        roles = [ctx.guild.get_role(r) for r in role_ids]
         role_names = [r.name for r in roles]
         role_numbers = [len(role.members) for r in roles]
         demographics_graph = self.get_demographics_graph(ctx.guild, role_names, role_numbers)
+        
         await ctx.send(content=f"{sum(role_numbers)} members in total", file=discord.File(demographics_graph, filename='demographics.png'))
     
     async def get_demographics_graph(self, guild, names, numbers):
