@@ -148,7 +148,7 @@ class General(commands.Cog):
                 
                 embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=title,
                                       description=f"{title} may refer to:\n\n" + 
-                                                  "\n".join([f"{n}. {r}" for r in enumerate(may_refer_to, start=1)]) + 
+                                                  "\n".join([f"{n}. {r}" for n, r in enumerate(may_refer_to, start=1)]) + 
                                                   "\n\nEnter the number of the wikipedia page you would like to see.")
                 embed.set_author(name="Wikipedia", url=url, icon_url="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
                 tmp = await ctx.send(embed=embed)
