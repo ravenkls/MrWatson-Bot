@@ -134,8 +134,9 @@ class General(commands.Cog):
                           "prop": "revisions",
                           "rvprop": "content",
                           "rvparse": "",
-                          "titles": title}
-                          
+                          "titles": title,
+                          "format": "json"}
+
                 async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
                     data = await r.json()
                     html = data["query"]["pages"][str(pageid)]["revisions"][0]["*"]
