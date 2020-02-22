@@ -6,9 +6,13 @@ import discord
 from discord.ext import commands
 from fuzzywuzzy import process
 import aiohttp
-import wikipedia
+from matplotlib import style
+import matplotlib.pyplot as plt
 
 from settings import *
+
+
+style.use('dark_background')
 
 
 async def is_admin(ctx):
