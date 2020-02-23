@@ -246,7 +246,7 @@ class General(commands.Cog):
         
         soup = BeautifulSoup(html, "html.parser")
         rows = soup.select_one(".emote-table").find_all("tr", class_="selectable")
-        emotes = [r.select_one(".emote-name").text.lower() for r in rows]
+        emotes = [r.select_one(".emote-name").text.lower().strip().split("\n")[0] for r in rows]
 
         try:
             index = emotes.index(query)
