@@ -83,7 +83,8 @@ class Database:
         """Check roles for a reaction to a message."""
         result = await self.conn.fetchrow("SELECT role_id, nick_addition FROM assign_role_reactions WHERE message_id=$1 AND emoji=$2;",
                                           message_id, str(emoji))
-        return result["role_id"], result["nick_addition"]
+        if result:
+            return result["role_id"], result["nick_addition"]
 
     async def remove_helper_role(self, channel, role_id):
         """Remove a helper role from a channel."""
