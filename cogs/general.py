@@ -330,7 +330,7 @@ class General(commands.Cog):
     async def demographics(self, ctx):
         await ctx.trigger_typing()
 
-        role_ids = self.bot.database.get_demographic_roles()
+        role_ids = await self.bot.database.get_demographic_roles()
         roles = [ctx.guild.get_role(r) for r in role_ids]
         role_names = [r.name for r in roles]
         role_numbers = [len(r.members) for r in roles]
@@ -361,14 +361,14 @@ class General(commands.Cog):
     @commands.guild_only()
     @commands.check(is_admin)
     async def adddemographicsrole(self, ctx, *, role: discord.Role):
-        self.bot.database.add_demographic_role(role)
+        await self.bot.database.add_demographic_role(role)
         await ctx.send(f"{role} has been added.")
     
     @commands.command(hidden=True)
     @commands.guild_only()
     @commands.check(is_admin)
     async def removedemographicsrole(self, ctx, *, role: discord.Role):
-        self.bot.database.remove_demographic_role(role)
+        await self.bot.database.remove_demographic_role(role)
         await ctx.send(f"{role} has been removed.")
 
     @commands.Cog.listener()

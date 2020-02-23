@@ -399,7 +399,7 @@ class Moderation(commands.Cog):
     @commands.check(is_mod)
     async def punishments(self, ctx):
         """Get all ongoing punishments."""
-        punishments = self.bot.database.get_temporary_punishments()
+        punishments = await self.bot.database.get_temporary_punishments()
         embed = discord.Embed(colour=0xFF0000, title="Ongoing Punishments")
         for member_id, punishment_type, expiry_date in punishments:
             member = ctx.guild.get_member(member_id)

@@ -190,7 +190,7 @@ class Watson(commands.Cog):
         elif member == ctx.author:
             raise Exception("You can't rep yourself!")
 
-        reps = self.bot.database.add_rep(member)
+        reps = await self.bot.database.add_rep(member)
         await ctx.send(f"✅ **{member.mention}** now has `{reps}` reputation points!")
 
     @commands.command()
@@ -199,13 +199,13 @@ class Watson(commands.Cog):
         """View how many reputation points a user has."""
         if member is None:
             member = ctx.author
-        rep_count = self.bot.database.get_reps(member)
+        rep_count = await self.bot.database.get_reps(member)
         await ctx.send(f"{member} has `{rep_count}` reputation points.")
 
     @commands.command()
     async def leaderboard(self, ctx):
         """View the reputation points leaderboard."""
-        leaderboard = self.bot.database.get_top_reps()
+        leaderboard = await self.bot.database.get_top_reps()
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR)
         embed.set_author(name="Reputation Leaderboard", icon_url="https://images.emojiterra.com/mozilla/512px/1f3c6.png")
         for member_id, points in leaderboard:
@@ -228,8 +228,8 @@ class Moderation(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     async def adminrole(self, ctx, *, role: discord.Role):
-        self.bot.database.set_setting("admin_role_guild_id", str(ctx.guild.id))
-        self.bot.database.set_setting("admin_role_id", str(ctx.guild.id))
+        await self.bot.database.set_setting("admin_role_guild_id", str(ctx.guild.id))
+        await self.bot.database.set_setting("admin_role_id", str(ctx.guild.id))
         await ctx.send(f"✅ {role.mention} is now set as the admin role.")
 
     @commands.command()

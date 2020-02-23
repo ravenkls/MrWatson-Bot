@@ -31,7 +31,7 @@ class AssignRoles(commands.Cog):
     @commands.check(is_admin)
     async def addrolereaction(self, ctx, message_id: int, emoji, role: discord.Role, *, nick):
         message = await ctx.channel.fetch_message(message_id)
-        self.bot.database.add_role_reaction(message.id, emoji, role, nick)
+        await self.bot.database.add_role_reaction(message.id, emoji, role, nick)
         await message.add_reaction(emoji)
     
     @commands.command(hidden=True)
@@ -39,7 +39,7 @@ class AssignRoles(commands.Cog):
     @commands.check(is_admin)
     async def removerolereaction(self, ctx, message_id, emoji):
         message = await ctx.channel.fetch_message(message_id)
-        self.bot.database.remove_role_reaction(message.id, emoji)
+        await self.bot.database.remove_role_reaction(message.id, emoji)
         await message.remove_reaction(emoji, ctx.guild.get_member(self.bot.user.id))
 
     @commands.command(aliases=["nick"])
@@ -61,7 +61,7 @@ class AssignRoles(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        check = self.bot.database.check_reaction(payload.message_id, payload.emoji)
+        check = await self.bot.database.check_reaction(payload.message_id, payload.emoji)
         if check:
             role_id, nick = check
             guild = self.bot.get_guild(payload.guild_id)
@@ -80,7 +80,7 @@ class AssignRoles(commands.Cog):
     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
-        check = self.bot.database.check_reaction(payload.message_id, payload.emoji)
+        check = await self.bot.database.check_reaction(payload.message_id, payload.emoji)
         if check:
             role_id, nick = check
             guild = self.bot.get_guild(payload.guild_id)

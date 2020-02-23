@@ -30,7 +30,7 @@ class Helpers(commands.Cog):
         elif member == ctx.author:
             raise Exception("You can't rep yourself!")
 
-        reps = self.bot.database.add_rep(member)
+        reps = await self.bot.database.add_rep(member)
         await ctx.send(f"✅ **{member.mention}** now has `{reps}` reputation points!")
 
     @commands.command()
@@ -39,13 +39,13 @@ class Helpers(commands.Cog):
         """View how many reputation points a user has."""
         if member is None:
             member = ctx.author
-        rep_count = self.bot.database.get_reps(member)
+        rep_count = await self.bot.database.get_reps(member)
         await ctx.send(f"{member} has `{rep_count}` reputation points.")
 
     @commands.command()
     async def leaderboard(self, ctx):
         """View the reputation points leaderboard."""
-        leaderboard = self.bot.database.get_top_reps()
+        leaderboard = await self.bot.database.get_top_reps()
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR)
         embed.set_author(name="Reputation Leaderboard", icon_url="https://images.emojiterra.com/mozilla/512px/1f3c6.png")
         for member_id, points in leaderboard:
@@ -59,8 +59,8 @@ class Helpers(commands.Cog):
     @commands.guild_only()
     async def setglobalhelperrole(self, ctx, *, role: discord.Role):
         """Sets the global helper role."""
-        self.bot.database.set_setting("helper_role_guild_id", str(ctx.guild.id))
-        self.bot.database.set_setting("helper_role_id", str(role.id))
+        await self.bot.database.set_setting("helper_role_guild_id", str(ctx.guild.id))
+        await self.bot.database.set_setting("helper_role_id", str(role.id))
         await ctx.send(f"✅ {role.mention} is now set as the helper role.")
 
     @commands.command()
@@ -68,7 +68,7 @@ class Helpers(commands.Cog):
     @commands.guild_only()
     async def addhelperrole(self, ctx, *, role: discord.Role):
         """Add a helper role to a channel."""
-        self.bot.database.add_helper_role(ctx.channel, role)
+        await self.bot.database.add_helper_role(ctx.channel, role)
         await ctx.send(f"{role.mention} is now a helper role for this channel.")
     
     @commands.command()
@@ -76,7 +76,7 @@ class Helpers(commands.Cog):
     @commands.guild_only()
     async def removehelperrole(self, ctx, *, role: discord.Role):
         """Remove a helper role from a channel."""
-        self.bot.database.remove_helper_role(ctx.channel, role.id)
+        await self.bot.database.remove_helper_role(ctx.channel, role.id)
         await ctx.send(f"{role.mention} is no longer a helper role for this channel.")
 
     @commands.command()
@@ -84,13 +84,13 @@ class Helpers(commands.Cog):
     async def helperroles(self, ctx):
         """Get all helper roles for a channel."""
         string = ""
-        helper_roles = self.bot.database.get_helper_roles(ctx.channel)
+        helper_roles = await self.bot.database.get_helper_roles(ctx.channel)
         for r in helper_roles:
             role = ctx.guild.get_role(r)
             if role:
                 string += role.name + "\n"
             else:
-                self.bot.database.remove_helper_role(ctx.channel, r)
+                await self.bot.database.remove_helper_role(ctx.channel, r)
             
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=f"Helpers for {ctx.channel}",
                               description=string)
@@ -100,7 +100,7 @@ class Helpers(commands.Cog):
     @commands.guild_only()
     async def helper(self, ctx):
         """Calls a helper if you need help, this command only works in subject channels."""
-        role_ids = self.bot.database.get_helper_roles(ctx.channel)
+        role_ids = await self.bot.database.get_helper_roles(ctx.channel)
         roles = [ctx.guild.get_role(r) for r in role_ids]
         role_mentions = []
         role_previous_setting = []
@@ -108,7 +108,7 @@ class Helpers(commands.Cog):
         
         for role in roles:
             if role is None:
-                self.bot.database.remove_helper_role(ctx.channel, r)
+                await self.bot.database.remove_helper_role(ctx.channel, r)
                 continue
             if not mention_everyone:
                 previous_setting = role.mentionable
@@ -177,15 +177,15 @@ class Helpers(commands.Cog):
                 amount = int(amount)
 
                 if args[0].lower() == "set":
-                    new_points = self.bot.database.set_reps(member, amount)
+                    new_points = await self.bot.database.set_reps(member, amount)
                     embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                           description=f"🏅 {ctx.author.mention} set {member.mention}'s reputation points to {new_points}")
                 elif args[0].lower() == "remove":
-                    new_points = self.bot.database.add_rep(member, amount=-amount)
+                    new_points = await self.bot.database.add_rep(member, amount=-amount)
                     embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                           description=f"🏅 {ctx.author.mention} removed {amount} reputation points from {member.mention}")
                 elif args[0].lower() == "add":
-                    new_points = self.bot.database.add_rep(member, amount=amount)
+                    new_points = await self.bot.database.add_rep(member, amount=amount)
                     embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                           description=f"🏅 {ctx.author.mention} added {amount} reputation points from {member.mention}")
                 await self.bot.get_cog("Moderation").log(embed)
@@ -205,7 +205,7 @@ class Helpers(commands.Cog):
         except asyncio.TimeoutError:
             return
         else:
-            self.bot.database.clear_reputations()
+            await self.bot.database.clear_reputations()
             embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                   description=f"🏅 {ctx.author.mention} removed ALL reputation points")
             await self.bot.get_cog("Moderation").log(embed)
