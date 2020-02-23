@@ -1,4 +1,5 @@
-import psycopg2
+import asyncio
+import asyncpg
 from settings import DATABASE_URL
 import time
 import os
@@ -8,192 +9,173 @@ class Database:
     """A database access object for interacting with the bot database."""
 
     def __init__(self):
-        self.conn = psycopg2.connect(DATABASE_URL, sslmode="require")
-        self.cursor = self.conn.cursor()
-        self.init_tables()
-        self.settings = self.load_settings()
+        asyncio.run(self.connect_to_database())
     
-    def init_tables(self):
+    async def connect_to_database(self):
+        self.conn = await asyncpg.connect(DATABASE_URL, ssl=True)
+        self.settings = await self.load_settings()
+        await self.init_tables()
+    
+    async def init_tables(self):
         """Intialise the database tables."""
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS reputation_points "
-                            "(member_id BIGINT PRIMARY KEY, points INTEGER);")
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS warnings "
-                            "(member_id BIGINT, author BIGINT, reason TEXT, timestamp BIGINT);")
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS temporary_punishments "
-                            "(member_id BIGINT, guild_id BIGINT, type CHAR(1), expiry_date BIGINT);")
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);")
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS helper_roles (guild_id BIGINT, channel_id BIGINT, role_id BIGINT);")
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS assign_role_reactions "
-                            "(message_id BIGINT, emoji TEXT, role_id BIGINT, nick_addition TEXT);")
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS demographic_roles "
-                            "(role_id BIGINT PRIMARY KEY);")
-        self.conn.commit()
+        await self.conn.execute("CREATE TABLE IF NOT EXISTS reputation_points "
+                                "(member_id BIGINT PRIMARY KEY, points INTEGER);")
+        await self.conn.execute("CREATE TABLE IF NOT EXISTS warnings "
+                                "(member_id BIGINT, author BIGINT, reason TEXT, timestamp BIGINT);")
+        await self.conn.execute("CREATE TABLE IF NOT EXISTS temporary_punishments "
+                                "(member_id BIGINT, guild_id BIGINT, type CHAR(1), expiry_date BIGINT);")
+        await self.conn.execute("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);")
+        await self.conn.execute("CREATE TABLE IF NOT EXISTS helper_roles (guild_id BIGINT, channel_id BIGINT, role_id BIGINT);")
+        await self.conn.execute("CREATE TABLE IF NOT EXISTS assign_role_reactions "
+                                "(message_id BIGINT, emoji TEXT, role_id BIGINT, nick_addition TEXT);")
+        await self.conn.execute("CREATE TABLE IF NOT EXISTS demographic_roles "
+                                "(role_id BIGINT PRIMARY KEY);")
     
-    def load_settings(self):
+    async def load_settings(self):
         """Load settings from database."""
-        self.cursor.execute("SELECT * FROM settings;")
-        return dict(self.cursor.fetchall())
+        results = await self.conn.fetch("SELECT * FROM settings;")
+        return {r.key: r.value for r in results}
     
-    def set_setting(self, key, value):
+    async def set_setting(self, key, value):
         """Set a setting value."""
         if key in self.settings:
-            self.cursor.execute("UPDATE settings SET value=%s WHERE key=%s;", (value, key))
+            await self.conn.execute("UPDATE settings SET value=$1 WHERE key=$1;", value, key)
         else:
-            self.cursor.execute("INSERT INTO settings (key, value) VALUES (%s, %s);", (key, value))
-        self.conn.commit()
+            await self.conn.execute("INSERT INTO settings (key, value) VALUES ($1, $2);", key, value)
         self.settings[key] = value
 
-    def add_demographic_role(self, role):
-        self.cursor.execute("INSERT INTO demographic_roles (role_id) VALUES (%s);", (role.id,))
-        self.conn.commit()
+    async def add_demographic_role(self, role):
+        await self.conn.execute("INSERT INTO demographic_roles (role_id) VALUES ($1);", role.id)
     
-    def remove_demographic_role(self, role):
-        self.cursor.execute("DELETE FROM demographic_roles WHERE role_id=%s", (role.id,))
-        self.conn.commit()
+    async def remove_demographic_role(self, role):
+        await self.conn.execute("DELETE FROM demographic_roles WHERE role_id=$1", role.id)
 
-    def get_demographic_roles(self):
-        self.cursor.execute("SELECT role_id FROM demographic_roles;")
-        result = self.cursor.fetchall()
+    async def get_demographic_roles(self):
+        result = await self.conn.fetch("SELECT role_id FROM demographic_roles;")
         if result:
-            return [r[0] for r in result]
+            return [r.role_id for r in result]
 
-    def add_helper_role(self, channel, role):
+    async def add_helper_role(self, channel, role):
         """Add a helper role for a channel."""
         if role.id in self.get_helper_roles(channel):
             return
-        self.cursor.execute("INSERT INTO helper_roles (guild_id, channel_id, role_id) VALUES (%s, %s, %s);",
-                            (channel.guild.id, channel.id, role.id))
-        self.conn.commit()
+        await self.conn.execute("INSERT INTO helper_roles (guild_id, channel_id, role_id) VALUES ($1, $2, $3);",
+                                channel.guild.id, channel.id, role.id)
 
-    def get_helper_roles(self, channel):
+    async def get_helper_roles(self, channel):
         """Get the helper role for a channel."""
-        self.cursor.execute("SELECT role_id FROM helper_roles WHERE guild_id=%s AND channel_id=%s",
-                            (channel.guild.id, channel.id))
-        results = self.cursor.fetchall()
-        return [r[0] for r in results]
+        results = await self.conn.fetch("SELECT role_id FROM helper_roles WHERE guild_id=$1 AND channel_id=$2",
+                                        channel.guild.id, channel.id)
+        return [r.role_id for r in results]
     
-    def add_role_reaction(self, message_id, emoji, role, nick):
+    async def add_role_reaction(self, message_id, emoji, role, nick):
         """Add a role reaction."""
-        self.cursor.execute("INSERT INTO assign_role_reactions (message_id, emoji, role_id, nick_addition) "
-                            "VALUES (%s, %s, %s, %s);", (message_id, str(emoji), role.id, nick))
-        self.conn.commit()
+        await self.conn.execute("INSERT INTO assign_role_reactions (message_id, emoji, role_id, nick_addition) "
+                                "VALUES ($1, $2, $3, $4);", message_id, str(emoji), role.id, nick)
 
-    def remove_role_reaction(self, message_id, emoji):
+    async def remove_role_reaction(self, message_id, emoji):
         """Remove a role reaction."""
-        self.cursor.execute("DELETE FROM assign_role_reactions WHERE message_id=%s AND emoji=%s;",
-                            (message_id, str(emoji)))
-        self.conn.commit()
+        await self.conn.execute("DELETE FROM assign_role_reactions WHERE message_id=$1 AND emoji=$2;",
+                                message_id, str(emoji))
     
-    def check_reaction(self, message_id, emoji):
+    async def check_reaction(self, message_id, emoji):
         """Check roles for a reaction to a message."""
-        self.cursor.execute("SELECT role_id, nick_addition FROM assign_role_reactions WHERE message_id=%s AND emoji=%s;",
-                            (message_id, str(emoji)))
-        results = self.cursor.fetchone()
-        return results
+        result = await self.conn.fetchrow("SELECT role_id, nick_addition FROM assign_role_reactions WHERE message_id=$1 AND emoji=$2;",
+                                          message_id, str(emoji))
+        return result.role_id, result.nick_addition
 
-    def remove_helper_role(self, channel, role_id):
+    async def remove_helper_role(self, channel, role_id):
         """Remove a helper role from a channel."""
-        self.cursor.execute("DELETE FROM helper_roles WHERE guild_id=%s AND channel_id=%s AND role_id=%s;",
-                            (channel.guild.id, channel.id, role_id))
-        self.conn.commit()
+        await self.conn.execute("DELETE FROM helper_roles WHERE guild_id=$1 AND channel_id=$2 AND role_id=$3;",
+                                channel.guild.id, channel.id, role_id)
 
-    def new_punishment(self, member, punishment_type, expire_date):
+    async def new_punishment(self, member, punishment_type, expire_date):
         """Add temporary punishment to the database."""
-        self.cursor.execute("INSERT INTO temporary_punishments (member_id, guild_id, type, expiry_date) "
-                            "VALUES (%s, %s, %s, %s);", (member.id, member.guild.id, punishment_type, expire_date))
-        self.conn.commit()
+        await self.conn.execute("INSERT INTO temporary_punishments (member_id, guild_id, type, expiry_date) "
+                                "VALUES ($1, $2, $3, $4);", member.id, member.guild.id, punishment_type, expire_date)
 
-    def get_expired_punishments(self):
+    async def get_expired_punishments(self):
         """Retrieve any expired punishments."""
         time_now = time.time()
-        self.cursor.execute("SELECT member_id, guild_id, type FROM temporary_punishments WHERE expiry_date < %s;", (time_now,))
-        expired = self.cursor.fetchall()
+        expired = await self.conn.fetch("SELECT member_id, guild_id, type FROM temporary_punishments WHERE expiry_date < $1;", time_now)
         if expired:
-            self.cursor.execute("DELETE FROM temporary_punishments WHERE expiry_date < %s;", (time_now,))
-            self.conn.commit()
-        return expired
+            await self.conn.execute("DELETE FROM temporary_punishments WHERE expiry_date < $1;", time_now)
+        return expired.member_id, expired.guild_id, expired.type
     
-    def get_temporary_punishments(self):
+    async def get_temporary_punishments(self):
         """Get all active punishments"""
-        self.cursor.execute("SELECT member_id, type, expiry_date FROM temporary_punishments;")
-        return self.cursor.fetchall()
+        result = await self.conn.fetch("SELECT member_id, type, expiry_date FROM temporary_punishments ORDER BY expiry_date DESC;")
+        return result.member_id, result.type, result.expiry_date
 
-    def add_warning(self, member, author, reason):
+    async def add_warning(self, member, author, reason):
         """Add a warning to a member."""
         t = time.time()*100
-        self.cursor.execute("INSERT INTO warnings (member_id, author, reason, timestamp) "
-                            "VALUES (%s, %s, %s, %s);", (member.id, author.id, reason, t))
-        self.conn.commit()
+        await self.conn.execute("INSERT INTO warnings (member_id, author, reason, timestamp) "
+                                "VALUES ($1, $2, $3, $4);", member.id, author.id, reason, t)
     
-    def remove_warning(self, member, timestamp):
+    async def remove_warning(self, member, timestamp):
         """Remove a warning from a member."""
-        self.cursor.execute("DELETE FROM warnings WHERE member_id=%s AND timestamp=%s;", 
-                            (member.id, timestamp*100))
-        self.conn.commit()
+        await self.conn.execute("DELETE FROM warnings WHERE member_id=$1 AND timestamp=$2;", 
+                                  member.id, timestamp*100)
     
-    def get_warnings(self, member):
+    async def get_warnings(self, member):
         """Retrieve all warnings given to a user."""
-        self.cursor.execute("SELECT author, reason, timestamp FROM warnings WHERE member_id=%s ORDER BY timestamp DESC;", (member.id,))
+        results = await self.conn.fetch("SELECT author, reason, timestamp FROM warnings WHERE member_id=$1 ORDER BY timestamp DESC;", 
+                                       member.id)
         
         warnings = []
-        for result in self.cursor.fetchall():
-            author_id, reason, timestamp = result
-            timestamp /= 100
-            warnings.append((author_id, reason, timestamp))
+        for result in results:
+            warnings.append((result.author, result.reason, result.timestamp/100))
 
         return warnings
 
-    def add_rep(self, member, amount=1):
+    async def add_rep(self, member, amount=1):
         """Add X reputation points to the member."""
-        points = self.get_reps(member)
+        points = await self.get_reps(member)
 
         if points:
             new_points = points + amount
-            result = self.set_reps(member, new_points)
+            result = await self.set_reps(member, new_points)
         else:
             new_points = amount
-            result = self.set_reps(member, new_points)
-        self.conn.commit()
+            result = await self.set_reps(member, new_points)
 
         return result
     
-    def set_reps(self, member, amount):
+    async def set_reps(self, member, amount):
         """Set the reps for a member to a specific value."""
-        points = self.get_reps(member)
+        points = await self.get_reps(member)
         if amount > 100000000:
             amount = 100000000
         if amount < 0:
             amount = 0
         if points:
             if amount != 0:
-                self.cursor.execute("UPDATE reputation_points SET points=%s WHERE member_id=%s;", 
-                                    (amount, member.id))
+                await self.conn.execute("UPDATE reputation_points SET points=$1 WHERE member_id=$1;", 
+                                        amount, member.id)
             else:
-                self.cursor.execute("DELETE FROM reputation_points WHERE member_id=%s", (member.id,))
+                await self.conn.execute("DELETE FROM reputation_points WHERE member_id=$1", member.id)
         elif amount != 0:
-            self.cursor.execute("INSERT INTO reputation_points (member_id, points) VALUES (%s, %s);",
-                                (member.id, amount))
-        self.conn.commit()
+            await self.conn.execute("INSERT INTO reputation_points (member_id, points) VALUES ($1, $2);",
+                                    member.id, amount)
 
         return amount
 
-    def get_reps(self, member):
+    async def get_reps(self, member):
         """Retrieve the reputation points for a member."""
-        self.cursor.execute("SELECT points FROM reputation_points WHERE member_id=%s;", 
-                            (member.id,))
-        points = self.cursor.fetchone()
-        if points:
-            return points[0]
+        reps = await self.conn.fetchrow("SELECT points FROM reputation_points WHERE member_id=$1;", 
+                                          member.id)
+        if reps:
+            return reps.points
         else:
             return 0
     
-    def get_top_reps(self, amount=10):
+    async def get_top_reps(self, amount=10):
         """Retrieve the top X people by reps."""
-        self.cursor.execute("SELECT * FROM reputation_points ORDER BY points DESC LIMIT %s;",
-                            (amount,))
-        return self.cursor.fetchall()
+        results = await self.conn.fetch("SELECT * FROM reputation_points ORDER BY points DESC LIMIT $1;",
+                                        amount)
+        return [r.member_id, r.points for r in results]
     
-    def clear_reputations(self):
+    async def clear_reputations(self):
         """Remove all reputations from the table."""
-        self.cursor.execute("DELETE FROM reputation_points;")
-        self.conn.commit()
+        await self.conn.execute("DELETE FROM reputation_points;")

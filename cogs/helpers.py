@@ -133,13 +133,12 @@ class Helpers(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def synchelperperms(self, ctx):
-        self.bot.database.cursor.execute("SELECT * FROM helper_roles;")
-        results = self.bot.database.cursor.fetchall()
+        results = await self.bot.database.conn.fetch("SELECT * FROM helper_roles;")
         perm_overwrite = discord.PermissionOverwrite(read_messages=True)
 
-        for guild_id, channel_id, role_id in results:
-            channel = ctx.guild.get_channel(channel_id)
-            role = ctx.guild.get_role(role_id)
+        for r in results:
+            channel = ctx.guild.get_channel(r.channel_id)
+            role = ctx.guild.get_role(r.role_id)
             await channel.set_permissions(role, overwrite=perm_overwrite)
         
         await ctx.send("Done!")
