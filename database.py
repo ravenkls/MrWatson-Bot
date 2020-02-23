@@ -101,7 +101,7 @@ class Database:
         expired = await self.conn.fetch("SELECT member_id, guild_id, type FROM temporary_punishments WHERE expiry_date < $1;", time_now)
         if expired:
             await self.conn.execute("DELETE FROM temporary_punishments WHERE expiry_date < $1;", time_now)
-        return expired["member_id"], expired["guild_id"], expired["type"]
+        return [(e["member_id"], e["guild_id"], e["type"]) for e in expired]
     
     async def get_temporary_punishments(self):
         """Get all active punishments"""
