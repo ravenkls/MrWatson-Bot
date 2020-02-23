@@ -174,7 +174,7 @@ class Database:
         """Retrieve the top X people by reps."""
         results = await self.conn.fetch("SELECT * FROM reputation_points ORDER BY points DESC LIMIT $1;",
                                         amount)
-        return [r.member_id, r.points for r in results]
+        return [(r.member_id, r.points) for r in results]
     
     async def clear_reputations(self):
         """Remove all reputations from the table."""
