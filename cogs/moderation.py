@@ -369,8 +369,8 @@ class Moderation(commands.Cog):
     @commands.check(is_admin)
     async def logchannel(self, ctx, channel: discord.TextChannel):
         """Set the channel in which logs are sent."""
-        self.bot.database.set_setting("log_guild_id", str(channel.guild.id))
-        self.bot.database.set_setting("log_channel_id", str(channel.id))
+        await self.bot.database.set_setting("log_guild_id", str(channel.guild.id))
+        await self.bot.database.set_setting("log_channel_id", str(channel.id))
         await ctx.send(f"✅ {channel.mention} is now the log channel.")
 
     @tasks.loop(minutes=1, reconnect=True)

@@ -40,7 +40,7 @@ class Database:
     async def set_setting(self, key, value):
         """Set a setting value."""
         if key in self.settings:
-            await self.conn.execute("UPDATE settings SET value=$1 WHERE key=$1;", value, key)
+            await self.conn.execute("UPDATE settings SET value=$1 WHERE key=$2;", value, key)
         else:
             await self.conn.execute("INSERT INTO settings (key, value) VALUES ($1, $2);", key, value)
         self.settings[key] = value
