@@ -106,7 +106,7 @@ class Database:
     async def get_temporary_punishments(self):
         """Get all active punishments"""
         result = await self.conn.fetch("SELECT member_id, type, expiry_date FROM temporary_punishments ORDER BY expiry_date DESC;")
-        return result["member_id"], result["type"], result["expiry_date"]
+        return [(r["member_id"], r["type"], r["expiry_date"]) for r in result]
 
     async def add_warning(self, member, author, reason):
         """Add a warning to a member."""
@@ -152,7 +152,7 @@ class Database:
             amount = 0
         if points:
             if amount != 0:
-                await self.conn.execute("UPDATE reputation_points SET points=$1 WHERE member_id=$1;", 
+                await self.conn.execute("UPDATE reputation_points SET points=$1 WHERE member_id=$2;", 
                                         amount, member.id)
             else:
                 await self.conn.execute("DELETE FROM reputation_points WHERE member_id=$1", member.id)

@@ -376,7 +376,7 @@ class Moderation(commands.Cog):
     @tasks.loop(minutes=1, reconnect=True)
     async def check_expired_punishments(self):
         self.logger.debug('Checking for expired punishments')
-        punishments = self.bot.database.get_expired_punishments()
+        punishments = await self.bot.database.get_expired_punishments()
         if punishments:
             self.logger.debug('Punishments found!')
         for p in punishments:
