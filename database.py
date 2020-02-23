@@ -35,6 +35,7 @@ class Database:
     async def load_settings(self):
         """Load settings from database."""
         results = await self.conn.fetch("SELECT * FROM settings;")
+        print(results)
         return {r.key: r.value for r in results}
     
     async def set_setting(self, key, value):
