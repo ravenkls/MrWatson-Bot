@@ -50,8 +50,8 @@ class Moderation(commands.Cog):
             else:
                 await ctx.send("The admin role is not set.")
         else:
-            self.bot.database.set_setting("admin_role_guild_id", str(ctx.guild.id))
-            self.bot.database.set_setting("admin_role_id", str(role.id))
+            await self.bot.database.set_setting("admin_role_guild_id", str(ctx.guild.id))
+            await self.bot.database.set_setting("admin_role_id", str(role.id))
             await ctx.send(f"✅ {role.mention} is now set as the admin role.")
     
     @commands.command()
@@ -66,8 +66,8 @@ class Moderation(commands.Cog):
             else:
                 await ctx.send("The mod role is not set.")
         else:
-            self.bot.database.set_setting("mod_role_guild_id", str(ctx.guild.id))
-            self.bot.database.set_setting("mod_role_id", str(role.id))
+            await self.bot.database.set_setting("mod_role_guild_id", str(ctx.guild.id))
+            await self.bot.database.set_setting("mod_role_id", str(role.id))
             await ctx.send(f"✅ {role.mention} is now set as the mod role.")
     
     @commands.command(hidden=True)
@@ -149,7 +149,7 @@ class Moderation(commands.Cog):
             if warning_id == "all":
                 for w in warnings:
                     timestamp = w[-1]
-                    self.bot.database.remove_warning(member, timestamp)
+                    await self.bot.database.remove_warning(member, timestamp)
                 await ctx.send(f"✅ All warnings for {member} have been removed.")
                 embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                         description=f"⚠️ {ctx.author.mention} removed all warnings from {member.mention}")
@@ -167,7 +167,7 @@ class Moderation(commands.Cog):
                 await ctx.send(f"There is no warning with the ID {warning_id}")
             else:
                 author_id, reason, timestamp = warning
-                self.bot.database.remove_warning(member, timestamp)
+                await self.bot.database.remove_warning(member, timestamp)
                 await ctx.send(f"✅ The warning given to {member} by {ctx.guild.get_member(author_id)} "
                                f"for reason: \"{reason}\" has been removed.")
                            
@@ -234,7 +234,7 @@ class Moderation(commands.Cog):
 
         await ctx.guild.ban(member, reason=f"Banned by {ctx.author}. Reason: {reason}")
         if expiry_time >= 0:
-            self.bot.database.new_punishment(member, self.BAN, expiry_time)
+            await self.bot.database.new_punishment(member, self.BAN, expiry_time)
             await ctx.send(f"✅ {member} has been banned for {str(total_time)}. Reason: {reason}")
             embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                   description=f"🔨 {member} was banned from the server for {str(total_time)} by {ctx.author.mention}. Reason: {reason}")
@@ -270,7 +270,7 @@ class Moderation(commands.Cog):
         role = guild.get_role(int(self.bot.database.settings.get('mute_role_id')))
         await member.add_roles(role, reason=f"Muted by {ctx.author}. Reason: {reason}")
         if expiry_time >= 0:
-            self.bot.database.new_punishment(member, self.MUTE, expiry_time)
+            await self.bot.database.new_punishment(member, self.MUTE, expiry_time)
             await ctx.send(f"✅ {member} has been muted for {str(total_time)}. Reason: {reason}")
             embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                   description=f"🙊 {member.mention} was muted in all text channels for {str(total_time)} by {ctx.author.mention}. Reason: {reason}")
@@ -333,8 +333,8 @@ class Moderation(commands.Cog):
             # elif isinstance(channel, discord.VoiceChannel):
             #     await channel.set_permissions(role, overwrite=voice_overwrite, reason=reason)
         
-        self.bot.database.set_setting('guild_mute_role_id', str(ctx.guild.id))
-        self.bot.database.set_setting('mute_role_id', str(role.id))
+        await self.bot.database.set_setting('guild_mute_role_id', str(ctx.guild.id))
+        await self.bot.database.set_setting('mute_role_id', str(role.id))
         await msg.edit(content=f"✅ {role.mention} is now set as the mute role.")
 
     @commands.command()
