@@ -35,8 +35,7 @@ class Database:
     async def load_settings(self):
         """Load settings from database."""
         results = await self.conn.fetch("SELECT * FROM settings;")
-        print(results)
-        return {r.key: r.value for r in results}
+        return {r["key"]: r["value"] for r in results}
     
     async def set_setting(self, key, value):
         """Set a setting value."""
@@ -55,7 +54,7 @@ class Database:
     async def get_demographic_roles(self):
         result = await self.conn.fetch("SELECT role_id FROM demographic_roles;")
         if result:
-            return [r.role_id for r in result]
+            return [r["role_id"] for r in result]
 
     async def add_helper_role(self, channel, role):
         """Add a helper role for a channel."""
@@ -68,7 +67,7 @@ class Database:
         """Get the helper role for a channel."""
         results = await self.conn.fetch("SELECT role_id FROM helper_roles WHERE guild_id=$1 AND channel_id=$2",
                                         channel.guild.id, channel.id)
-        return [r.role_id for r in results]
+        return [r["role_id"] for r in results]
     
     async def add_role_reaction(self, message_id, emoji, role, nick):
         """Add a role reaction."""
@@ -84,7 +83,7 @@ class Database:
         """Check roles for a reaction to a message."""
         result = await self.conn.fetchrow("SELECT role_id, nick_addition FROM assign_role_reactions WHERE message_id=$1 AND emoji=$2;",
                                           message_id, str(emoji))
-        return result.role_id, result.nick_addition
+        return result["role_id"], result["nick_addition"]
 
     async def remove_helper_role(self, channel, role_id):
         """Remove a helper role from a channel."""
@@ -102,12 +101,12 @@ class Database:
         expired = await self.conn.fetch("SELECT member_id, guild_id, type FROM temporary_punishments WHERE expiry_date < $1;", time_now)
         if expired:
             await self.conn.execute("DELETE FROM temporary_punishments WHERE expiry_date < $1;", time_now)
-        return expired.member_id, expired.guild_id, expired.type
+        return expired["member_id"], expired["guild_id"], expired["type"]
     
     async def get_temporary_punishments(self):
         """Get all active punishments"""
         result = await self.conn.fetch("SELECT member_id, type, expiry_date FROM temporary_punishments ORDER BY expiry_date DESC;")
-        return result.member_id, result.type, result.expiry_date
+        return result["member_id"], result["type"], result["expiry_date"]
 
     async def add_warning(self, member, author, reason):
         """Add a warning to a member."""
@@ -123,11 +122,11 @@ class Database:
     async def get_warnings(self, member):
         """Retrieve all warnings given to a user."""
         results = await self.conn.fetch("SELECT author, reason, timestamp FROM warnings WHERE member_id=$1 ORDER BY timestamp DESC;", 
-                                       member.id)
+                                        member.id)
         
         warnings = []
         for result in results:
-            warnings.append((result.author, result.reason, result.timestamp/100))
+            warnings.append((result["author"], result["reason"], result["timestamp"]/100))
 
         return warnings
 
@@ -166,9 +165,9 @@ class Database:
     async def get_reps(self, member):
         """Retrieve the reputation points for a member."""
         reps = await self.conn.fetchrow("SELECT points FROM reputation_points WHERE member_id=$1;", 
-                                          member.id)
+                                        member.id)
         if reps:
-            return reps.points
+            return reps["points"]
         else:
             return 0
     
@@ -176,7 +175,7 @@ class Database:
         """Retrieve the top X people by reps."""
         results = await self.conn.fetch("SELECT * FROM reputation_points ORDER BY points DESC LIMIT $1;",
                                         amount)
-        return [(r.member_id, r.points) for r in results]
+        return [(r["member_id"], r["points"]) for r in results]
     
     async def clear_reputations(self):
         """Remove all reputations from the table."""

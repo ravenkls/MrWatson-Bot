@@ -137,8 +137,8 @@ class Helpers(commands.Cog):
         perm_overwrite = discord.PermissionOverwrite(read_messages=True)
 
         for r in results:
-            channel = ctx.guild.get_channel(r.channel_id)
-            role = ctx.guild.get_role(r.role_id)
+            channel = ctx.guild.get_channel(r["channel_id"])
+            role = ctx.guild.get_role(r["role_id"])
             await channel.set_permissions(role, overwrite=perm_overwrite)
         
         await ctx.send("Done!")
