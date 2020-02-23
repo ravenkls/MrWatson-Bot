@@ -257,7 +257,7 @@ class General(commands.Cog):
         
         async with aiohttp.ClientSession() as session:
             async with session.get(src) as response:
-                data = await response.content()
+                data = await response.read()
                 f = discord.File(BytesIO(data), filename="emote.png")
 
         await ctx.send(file=f)
