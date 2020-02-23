@@ -13,7 +13,7 @@ class Database:
         loop.run_until_complete(self.connect_to_database())
     
     async def connect_to_database(self):
-        self.conn = await asyncpg.connect(DATABASE_URL, ssl=True)
+        self.conn = await asyncpg.connect(DATABASE_URL + "?sslmode=require")
         self.settings = await self.load_settings()
         await self.init_tables()
     
