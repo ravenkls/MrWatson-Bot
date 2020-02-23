@@ -105,7 +105,7 @@ class Database:
     
     async def get_temporary_punishments(self):
         """Get all active punishments"""
-        result = await self.conn.fetch("SELECT member_id, type, expiry_date FROM temporary_punishments ORDER BY expiry_date DESC;")
+        result = await self.conn.fetch("SELECT member_id, type, expiry_date FROM temporary_punishments ORDER BY expiry_date;")
         return [(r["member_id"], r["type"], r["expiry_date"]) for r in result]
 
     async def add_warning(self, member, author, reason):
