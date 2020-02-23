@@ -6,6 +6,7 @@ import time
 
 import discord
 from discord.ext import commands, tasks
+import aiohttp
 
 from settings import *
 
@@ -456,6 +457,13 @@ class Moderation(commands.Cog):
             expiry_time = time.time() + total_time.total_seconds()
 
         return reason, total_time, expiry_time
+
+    async def get_banned_websites(self):
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://blocklist.site/app/dl/porn") as response:
+                websites = await response.text().split("\n")
+        
+        self.banned_websites = websites
 
 def setup(bot):
     bot.add_cog(Moderation(bot))

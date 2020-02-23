@@ -235,7 +235,27 @@ class General(commands.Cog):
         embed.add_field(name="Account Creation Date", value=member.created_at.strftime("%d %B %Y"), inline=True)
         embed.add_field(name="Roles", value=", ".join(map(str, member.roles)), inline=False)
         await ctx.send(embed=embed)
+    
+    @commands.command()
+    async def bttv(self, ctx, *, query):
+        """Find a BetterTTV emote with a query."""
+        async with aiohttp.ClientSession() as session:
+            params = {"q": query, "sort": "count-desc"}
+            async with session.get("https://www.frankerfacez.com/emoticons/", params=params) as response:
+                html = await response.text()
         
+        soup = BeautifulSoup(html, "html.parser")
+        rows = soup.select_one(".emote-table").find_all("tr", class_="selectable")
+        emotes = [r.select_one(".emote-name").text.lower() for r in rows]
+
+        try:
+            index = emotes.index(query)
+        except ValueError:
+            return await ctx.send("I could not find any emote with that query.")
+        else:
+            src = rows[index].select_one(".emoticon.light > img")["src"]
+            await ctx.send(src)
+
     @commands.command(hidden=True)
     @commands.is_owner()
     async def reload(self, ctx, plugin):
