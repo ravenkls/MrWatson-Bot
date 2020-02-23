@@ -9,7 +9,8 @@ class Database:
     """A database access object for interacting with the bot database."""
 
     def __init__(self):
-        asyncio.run(self.connect_to_database())
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.connect_to_database())
     
     async def connect_to_database(self):
         self.conn = await asyncpg.connect(DATABASE_URL, ssl=True)
