@@ -109,7 +109,7 @@ class Moderation(commands.Cog):
     @commands.check(is_mod)
     async def warnings(self, ctx, member: discord.Member, page: int=1):
         """Retrieve all the warnings that a user has been given."""
-        warnings = self.bot.database.get_warnings(member)
+        warnings = await self.bot.database.get_warnings(member)
 
         pages = (len(warnings)-1) // 6 + 1
         if page > pages:
@@ -144,7 +144,7 @@ class Moderation(commands.Cog):
         """Remove a warning given the warning ID. (See user warning list for warning IDs).
         
         To remove all warnings, replace the warning ID with the word "all\""""
-        warnings = self.bot.database.get_warnings(member)
+        warnings = await self.bot.database.get_warnings(member)
         if not warning_id.isdigit():
             if warning_id == "all":
                 for w in warnings:
