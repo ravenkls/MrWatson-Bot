@@ -249,12 +249,18 @@ class General(commands.Cog):
         emotes = [r.select_one(".emote-name").text.lower().strip().split("\n")[0] for r in rows]
 
         try:
-            index = emotes.index(query)
+            index = emotes.index(query.lower())
         except ValueError:
             return await ctx.send("I could not find any emote with that query.")
         else:
             src = rows[index].select_one(".emoticon.light > img")["src"]
-            await ctx.send(src)
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.get(src) as response:
+                data = await src.content()
+                f = discord.File(BytesIO(data), filename="emote.png")
+
+        await ctx.send(file=f)
 
     @commands.command(hidden=True)
     @commands.is_owner()
