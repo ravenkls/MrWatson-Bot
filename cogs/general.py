@@ -121,10 +121,37 @@ class General(commands.Cog):
     @commands.command()
     async def translate(self, ctx, dest_code, *, text):
         translator = Translator()
-        text = translator.translate(text, dest=dest_code)
-        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=f"Translate {text.src.upper()} → {text.dest.upper()}",
-                              description=text.text)
+        translated = translator.translate(text, dest=dest_code)
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=f"Translate {translated.src.upper()} → {translated.dest.upper()}",
+                              description=f"```{text}```Translates to```{translated.text}```")
         embed.set_author(name="Google Translate", icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Google_Translate_logo.svg/1024px-Google_Translate_logo.svg.png")
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def define(self, ctx, *, term):
+        async with aiohttp.ClientSession() as session:
+            params = {"key": MERRIAM_WEBSTER_KEY}
+            async with session.get("https://dictionaryapi.com/api/v3/references/collegiate/json/" + term, params=params) as response:
+                data = await response.json()
+
+        if data:
+            if isinstance(data[0], dict):
+                # Show Definition
+                embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=term.title())
+                for d in data:
+                    embed.add_field(name=f"{d['meta']['id']} *({d['fl']})*", 
+                                    value="\n".join(f"{n}. {defi}" for n, defi in enumerate(d["shortdef"], start=1)),
+                                    inline=False)
+            else:
+                embed.description = f"I could not find anything with that query.\n\n _**Did you mean?:** {d[0]}_"
+        else:
+            embed.description = "I could not find anything with that query."
+        
+        embed.set_author(name="Merriam Webster Collegiate Dictionary", 
+                         icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Merriam-Webster_logo.svg/1200px-Merriam-Webster_logo.svg.png",
+                         url="https://www.merriam-webster.com/")
+        embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Merriam-Webster_logo.svg/1200px-Merriam-Webster_logo.svg.png")
+
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["wiki"])
