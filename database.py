@@ -42,8 +42,8 @@ class Database:
         tables = await self.get_tables()
         amount = 0
         for table in tables:
-            result = await self.conn.fetchrow(f"SELECT COUNT(*) FROM {table};")["count"]
-            amount += result
+            result = await self.conn.fetchrow(f"SELECT COUNT(*) FROM {table};")
+            amount += result["count"]
         return amount
 
     async def load_settings(self):
