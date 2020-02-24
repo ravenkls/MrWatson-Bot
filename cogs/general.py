@@ -218,14 +218,6 @@ class General(commands.Cog):
             await ctx.send("I could not find any roles matching your query.")
 
     @commands.command()
-    async def factoftheday(self, ctx):
-        async with aiohttp.ClientSession() as session:
-            async with session.get('https://uselessfacts.jsph.pl/today.json?language=en') as response:
-                response = await response.json()
-        
-        await ctx.send(response["text"])
-
-    @commands.command()
     async def userinfo(self, ctx, *, member: discord.Member=None):
         if member is None:
             member = ctx.author
@@ -254,32 +246,6 @@ class General(commands.Cog):
         embed.add_field(name="Discord Latency", value=f"{round(self.bot.latency*1000)}ms")
         embed.add_field(name="Uptime", value=str(uptime))
         await ctx.send(embed=embed)
-
-    @commands.command()
-    async def bttv(self, ctx, *, query):
-        """Find a BetterTTV emote with a query."""
-        async with aiohttp.ClientSession() as session:
-            params = {"q": query, "sort": "count-desc"}
-            async with session.get("https://www.frankerfacez.com/emoticons/", params=params) as response:
-                html = await response.text()
-        
-        soup = BeautifulSoup(html, "html.parser")
-        rows = soup.select_one(".emote-table").find_all("tr", class_="selectable")
-        emotes = [r.select_one(".emote-name").text.lower().strip().split("\n")[0] for r in rows]
-
-        try:
-            index = emotes.index(query.lower())
-        except ValueError:
-            return await ctx.send("I could not find any emote with that query.")
-        else:
-            src = rows[index].select_one(".emoticon.light > img")["src"]
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.get(src) as response:
-                data = await response.read()
-                f = discord.File(BytesIO(data), filename="emote.png")
-
-        await ctx.send(file=f)
 
     @commands.command(hidden=True)
     @commands.is_owner()
