@@ -240,7 +240,7 @@ class General(commands.Cog):
     
     @commands.command()
     async def info(self, ctx):
-        total_rows = await self.database.get_total_rows()
+        total_rows = await self.bot.database.get_total_rows()
         cpu_usage = psutil.cpu_percent()
         ram_usage = psutil.virtual_memory().percent
         latency = self.bot.latency
