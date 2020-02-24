@@ -12,6 +12,7 @@ from matplotlib import style
 import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 import psutil
+from googletrans import Translator
 
 from settings import *
 import asyncio
@@ -116,6 +117,15 @@ class General(commands.Cog):
         """Remove a tag."""
         await self.bot.database.remove_tag(tag)
         await ctx.send("✅ Removed")
+
+    @commands.command()
+    async def translate(self, ctx, dest_code, *, text):
+        translator = Translator()
+        text = translator.translate(text, dest=dest)
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=f"Translate {text.src.upper()} → {text.dest.upper()}",
+                              description=text.text)
+        embed.set_author(name="Google Translate", icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Google_Translate_logo.svg/1024px-Google_Translate_logo.svg.png")
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["wiki"])
     async def wikipedia(self, ctx, *, query):

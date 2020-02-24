@@ -16,6 +16,7 @@ matplotlib = "*"
 bs4 = "*"
 asyncpg = "*"
 psutil = "*"
+googletrans = "*"
 
 [requires]
 python_version = "3.8"
