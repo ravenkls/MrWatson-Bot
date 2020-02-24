@@ -32,6 +32,20 @@ class Database:
         await self.conn.execute("CREATE TABLE IF NOT EXISTS demographic_roles "
                                 "(role_id BIGINT PRIMARY KEY);")
     
+    async def get_tables(self):
+        """Retrieve all table names."""
+        results = await self.conn.fetch("SELECT * FROM information_schema.tables WHERE table_schema = 'public';")
+        return [r["table_name"] for r in results]
+    
+    async def get_total_rows(self):
+        """Retrieve the total rows used up."""
+        tables = await self.get_tables()
+        amount = 0
+        for table in tables:
+            result = await self.conn.fetchrow(f"SELECT COUNT(*) FROM {table};")["count"]
+            amount += result
+        return amount
+
     async def load_settings(self):
         """Load settings from database."""
         results = await self.conn.fetch("SELECT * FROM settings;")

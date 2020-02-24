@@ -15,6 +15,7 @@ wikipedia = "*"
 matplotlib = "*"
 bs4 = "*"
 asyncpg = "*"
+psutil = "*"
 
 [requires]
 python_version = "3.8"

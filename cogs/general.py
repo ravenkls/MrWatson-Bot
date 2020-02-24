@@ -2,6 +2,7 @@ import inspect
 import logging
 import time
 from io import BytesIO
+import datetime
 
 import discord
 from discord.ext import commands
@@ -10,6 +11,7 @@ import aiohttp
 from matplotlib import style
 import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
+import psutil
 
 from settings import *
 import asyncio
@@ -236,6 +238,23 @@ class General(commands.Cog):
         embed.add_field(name="Roles", value=", ".join(map(str, member.roles)), inline=False)
         await ctx.send(embed=embed)
     
+    @commands.command()
+    async def info(self, ctx):
+        total_rows = await self.database.get_total_rows()
+        cpu_usage = psutil.cpu_percent()
+        ram_usage = psutil.virtual_memory().percent
+        latency = self.bot.latency
+        uptime = datetime.timedelta(seconds=time.time() - self.start_time)
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title="Bot Information")
+        embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url_as(format='png', static_format='png'))
+        embed.set_thumbnail(url=self.bot.user.avatar_url_as(format='png', static_format='png'))
+        embed.add_field(name="Database Records", value=f"{total_rows}/10000")
+        embed.add_field(name="CPU Usage", value=f"{cpu_usage}%")
+        embed.add_field(name="RAM Usage", value=f"{ram_usage}%")
+        embed.add_field(name="Discord Latency", value=f"{round(self.bot.latency*1000)}ms")
+        embed.add_field(name="Uptime", value=str(uptime))
+        await ctx.send(embed=embed)
+
     @commands.command()
     async def bttv(self, ctx, *, query):
         """Find a BetterTTV emote with a query."""
