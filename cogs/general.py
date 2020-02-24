@@ -95,6 +95,28 @@ class General(commands.Cog):
                 help_embed.add_field(name="Usage", value="`" + usage + "`")
                 await ctx.send(embed=help_embed)
 
+    @commands.command(aliases=["t"])
+    async def tag(self, ctx, tag):
+        """Search for a tag by keyword."""
+        response = await self.bot.database.get_tag(tag)
+        if response:
+            await ctx.send(response)
+            await ctx.message.delete()
+    
+    @commands.command()
+    @commands.check(is_admin)
+    async def addtag(self, ctx, tag, *, response):
+        """Add a tag with a custom response."""
+        await self.bot.database.add_tag(tag, response)
+        await ctx.send("✅ Added")
+    
+    @commands.command()
+    @commands.check(is_admin)
+    async def removetag(self, ctx, tag):
+        """Remove a tag."""
+        await self.bot.database.remove_tag(tag)
+        await ctx.send("✅ Removed")
+
     @commands.command(aliases=["wiki"])
     async def wikipedia(self, ctx, *, query):
         """Search wikipedia with a query."""

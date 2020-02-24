@@ -31,6 +31,7 @@ class Database:
                                 "(message_id BIGINT, emoji TEXT, role_id BIGINT, nick_addition TEXT);")
         await self.conn.execute("CREATE TABLE IF NOT EXISTS demographic_roles "
                                 "(role_id BIGINT PRIMARY KEY);")
+        await self.conn.execute("CREATE TABLE IF NOT EXISTS tags (key TEXT PRIMARY KEY, value TEXT);")
     
     async def get_tables(self):
         """Retrieve all table names."""
@@ -45,6 +46,20 @@ class Database:
             result = await self.conn.fetchrow(f"SELECT COUNT(*) FROM {table};")
             amount += result["count"]
         return amount
+
+    async def get_tag(self, tag):
+        """Get a definition for a tag."""
+        result = await self.conn.fetchrow("SELECT value FROM tags WHERE key=$1", tag)
+        if result:
+            return result["value"]
+
+    async def add_tag(self, tag, definition):
+        """Add a tag to the database."""
+        await self.conn.execute("INSERT INTO tags (key, value) VALUES ($1, $2);", tag, definition)
+
+    async def remove_tag(self, tag):
+        """Remvoe a tag from the database."""
+        await self.conn.execute("DELETE FROM tags WHERE key=$1", tag)
 
     async def load_settings(self):
         """Load settings from database."""
