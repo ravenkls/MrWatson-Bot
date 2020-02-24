@@ -121,7 +121,7 @@ class General(commands.Cog):
     @commands.command()
     async def translate(self, ctx, dest_code, *, text):
         translator = Translator()
-        text = translator.translate(text, dest=dest)
+        text = translator.translate(text, dest=dest_code)
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=f"Translate {text.src.upper()} → {text.dest.upper()}",
                               description=text.text)
         embed.set_author(name="Google Translate", icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Google_Translate_logo.svg/1024px-Google_Translate_logo.svg.png")
