@@ -272,19 +272,20 @@ class General(commands.Cog):
         roles = [r for r in ctx.guild.roles][1:]
         name, match = process.extractOne(role, names)
         if match >= 75:
-            matched_roles = [roles[names.index(name)]]
+            matched_roles = {roles[names.index(name)]}
 
             channels = await self.bot.database.conn.fetch("SELECT channel_id FROM helper_roles WHERE role_id=$1", matched_roles[0].id)
             for c in channels:
                 other_roles = await self.bot.database.conn.fetch("SELECT role_id FROM helper_roles WHERE channel_id=$1 AND role_id != $2",
                                                                  c["channel_id"], matched_roles[0].id)
-                matched_roles.extend([ctx.guild.get_role(o["role_id"]) for o in other_roles])
+                for o in other_roles:
+                    matched_roles.add(ctx.guild.get_role(o["role_id"]))
 
             embed = discord.Embed(title=f"Query for members with role \"{role}\"",
                                   colour=EMBED_ACCENT_COLOUR)
             for m_role in matched_roles:
                 if m_role.members:
-                    embed.add_field(name=m_role.name, value="\n".join([m.mention for m in m_role.members]))
+                    embed.add_field(name=m_role.name, value="\n".join([m.mention for m in m_role.members]), inline=False)
             embed.set_footer(text=f"{sum(len(m.members) for m in matched_roles)} members in total")
             await ctx.send(embed=embed)
         else:
