@@ -276,7 +276,7 @@ class General(commands.Cog):
 
             channels = await self.bot.database.conn.fetch("SELECT channel_id FROM helper_roles WHERE role_id=$1", matched_roles[0].id)
             for c in channels:
-                other_roles = await self.bot.database.conn.fetch("SELECT role_id FROM helper_roles WHERE channel_id=$1 AND role_id NOT != $2",
+                other_roles = await self.bot.database.conn.fetch("SELECT role_id FROM helper_roles WHERE channel_id=$1 AND role_id != $2",
                                                                  c, matched_roles[0].id)
                 matched_roles.extend([ctx.guild.get_role(o) for o in other_roles])
 
