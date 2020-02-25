@@ -29,7 +29,7 @@ class AssignRoles(commands.Cog):
     @commands.command(hidden=True)
     @commands.guild_only()
     @commands.check(is_admin)
-    async def addrolereaction(self, ctx, message_id: int, emoji, role: discord.Role, *, nick):
+    async def addrolereaction(self, ctx, message_id: int, emoji, role: discord.Role, *, nick=None):
         message = await ctx.channel.fetch_message(message_id)
         await self.bot.database.add_role_reaction(message.id, emoji, role, nick)
         await message.add_reaction(emoji)
@@ -72,10 +72,11 @@ class AssignRoles(commands.Cog):
                 except discord.errors.Forbidden:
                     self.logger.warning("Permission denied when adding roles.")
                 
-                try:
-                    await payload.member.edit(nick=payload.member.name + " || " + nick)
-                except discord.errors.Forbidden:
-                    self.logger.warning("Permission denied when setting nickname.")
+                if nick:
+                    try:
+                        await payload.member.edit(nick=payload.member.name + " || " + nick)
+                    except discord.errors.Forbidden:
+                        self.logger.warning("Permission denied when setting nickname.")
                 
     
     @commands.Cog.listener()
@@ -91,11 +92,12 @@ class AssignRoles(commands.Cog):
                     await member.remove_roles(role)
                 except discord.errors.Forbidden:
                     self.logger.warning("Permission denied when removing role.")
-                
-                try:
-                    await member.edit(nick=None)
-                except discord.errors.Forbidden:
-                    self.logger.warning("Permission denied when setting nickname.")
+            
+                if nick:
+                    try:
+                        await member.edit(nick=None)
+                    except discord.errors.Forbidden:
+                        self.logger.warning("Permission denied when setting nickname.")
 
 def setup(bot):
     bot.add_cog(AssignRoles(bot))
