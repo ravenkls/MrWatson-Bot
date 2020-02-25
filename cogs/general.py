@@ -137,14 +137,16 @@ class General(commands.Cog):
             async with session.get("https://dictionaryapi.com/api/v3/references/collegiate/json/" + term, params=params) as response:
                 data = await response.json()
 
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=term.title())
+
         if data:
             if isinstance(data[0], dict):
                 # Show Definition
-                embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=term.title())
                 for d in data:
-                    embed.add_field(name=f"{d['meta']['id']} *({d['fl']})*", 
-                                    value="\n".join(f"{n}. {defi}" for n, defi in enumerate(d["shortdef"], start=1)),
-                                    inline=False)
+                    if d["shortdef"]:
+                        embed.add_field(name=f"{d['meta']['id']} *({d['fl']})*", 
+                                        value="\n".join(f"{n}. {defi}" for n, defi in enumerate(d["shortdef"], start=1)),
+                                        inline=False)
             else:
                 embed.description = f"I could not find anything with that query.\n\n _**Did you mean?:** {data[0]}_"
         else:
