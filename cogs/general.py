@@ -3,6 +3,7 @@ import logging
 import time
 from io import BytesIO
 import datetime
+import sys
 
 import discord
 from discord.ext import commands
@@ -312,9 +313,11 @@ class General(commands.Cog):
         ram_usage = psutil.virtual_memory().percent
         latency = self.bot.latency
         uptime = datetime.timedelta(seconds=time.time() - self.start_time)
+        python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title="Bot Information")
         embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url_as(format='png', static_format='png'))
         embed.set_thumbnail(url=self.bot.user.avatar_url_as(format='png', static_format='png'))
+        embed.add_field(name="Version", value=f"Python {python_version}\nDiscord.py {discord.__version__}")
         embed.add_field(name="Database Records", value=f"{total_rows}/10000")
         embed.add_field(name="CPU Usage", value=f"{cpu_usage}%")
         embed.add_field(name="RAM Usage", value=f"{ram_usage}%")
