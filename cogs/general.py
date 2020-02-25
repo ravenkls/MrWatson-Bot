@@ -272,12 +272,13 @@ class General(commands.Cog):
         roles = [r for r in ctx.guild.roles][1:]
         name, match = process.extractOne(role, names)
         if match >= 75:
-            matched_roles = {roles[names.index(name)]}
+            matched_role = roles[names.index(name)]
+            matched_roles = {matched_role}
 
-            channels = await self.bot.database.conn.fetch("SELECT channel_id FROM helper_roles WHERE role_id=$1", matched_roles[0].id)
+            channels = await self.bot.database.conn.fetch("SELECT channel_id FROM helper_roles WHERE role_id=$1", matched_role.id)
             for c in channels:
                 other_roles = await self.bot.database.conn.fetch("SELECT role_id FROM helper_roles WHERE channel_id=$1 AND role_id != $2",
-                                                                 c["channel_id"], matched_roles[0].id)
+                                                                 c["channel_id"], matched_role.id)
                 for o in other_roles:
                     matched_roles.add(ctx.guild.get_role(o["role_id"]))
 
