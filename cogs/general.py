@@ -284,7 +284,7 @@ class General(commands.Cog):
                                   colour=EMBED_ACCENT_COLOUR)
             for m_role in matched_roles:
                 embed.add_field(name=m_role.name, value="\n".join([m.mention for m in m_role.members]))
-            embed.set_footer(text=f"{len(matched_role.members)} members in total")
+            embed.set_footer(text=f"{sum(len(m.members) for m in matched_roles)} members in total")
             await ctx.send(embed=embed)
         else:
             await ctx.send("I could not find any roles matching your query.")
