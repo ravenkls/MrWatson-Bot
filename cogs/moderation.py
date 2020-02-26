@@ -408,7 +408,7 @@ class Moderation(commands.Cog):
         else:
             role = ctx.guild.get_role(int(role))
             await self.bot.database.add_jail_member(member)
-            await member.remove_roles(*member.roles)
+            await member.remove_roles(*member.roles[1:])
             await member.add_roles(role)
         await ctx.send(f"👮 {member.mention} has been sent to nursery!")
     

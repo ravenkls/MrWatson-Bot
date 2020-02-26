@@ -50,7 +50,7 @@ class Database:
 
     async def add_jail_member(self, member):
         """Add a member to jail."""
-        roles_string = ";".join([str(r.id) for r in member.roles])
+        roles_string = ";".join([str(r.id) for r in member.roles[1:]])
         await self.conn.execute("INSERT INTO jail_members (member_id, roles) VALUES ($1, $2);", member.id, roles_string)
     
     async def remove_jail_member(self, member):
