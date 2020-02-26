@@ -32,6 +32,7 @@ class Database:
         await self.conn.execute("CREATE TABLE IF NOT EXISTS demographic_roles "
                                 "(role_id BIGINT PRIMARY KEY);")
         await self.conn.execute("CREATE TABLE IF NOT EXISTS tags (key TEXT PRIMARY KEY, value TEXT);")
+        await self.conn.execute("CREATE TABLE IF NOT EXISTS jail_members (member_id BIGINT PRIMARY KEY, roles TEXT);")
     
     async def get_tables(self):
         """Retrieve all table names."""
@@ -46,6 +47,18 @@ class Database:
             result = await self.conn.fetchrow(f"SELECT COUNT(*) FROM {table};")
             amount += result["count"]
         return amount
+
+    async def add_jail_member(self, member):
+        """Add a member to jail."""
+        roles_string = ";".join([str(r.id) for r in member.roles])
+        await self.conn.execute("INSERT INTO jail_members (member_id, roles) VALUES ($1, $2);", member.id, roles_string)
+    
+    async def remove_jail_member(self, member):
+        """Remove a member from jail and get their previous roles."""
+        record = await self.conn.fetchrow("SELECT * FROM jail_members WHERE member_id=$1;", member.id)
+        role_ids = [int(rid) for rid in record["roles_string"].split(";")]
+        await self.conn.execute("DELETE FROM jail_members WHERE member_id=$1;", member.id)
+        return role_ids
 
     async def get_tag(self, tag):
         """Get a definition for a tag."""
