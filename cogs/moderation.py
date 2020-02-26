@@ -421,6 +421,7 @@ class Moderation(commands.Cog):
         if not role:
             await ctx.send("You need to setup the jail command with `-setupjail` before using this command!")
         else:
+            role = ctx.guild.get_role(int(role))
             role_ids = await self.bot.database.remove_jail_member(member)
             previous_roles = [ctx.guild.get_role(rid) for rid in role_ids]
             jail_role = ctx.guild.get_role(int(role))
