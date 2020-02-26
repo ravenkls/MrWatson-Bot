@@ -106,9 +106,9 @@ class Helpers(commands.Cog):
         role_previous_setting = []
         mention_everyone = False#ctx.channel.permissions_for(ctx.guild.get_member(self.bot.user.id)).mention_everyone
         
-        for role in roles:
+        for role_id, role in zip(role_ids, roles):
             if role is None:
-                await self.bot.database.remove_helper_role(ctx.channel, r)
+                await self.bot.database.remove_helper_role(ctx.channel, role_id)
                 continue
             if not mention_everyone:
                 previous_setting = role.mentionable
