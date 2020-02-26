@@ -55,7 +55,7 @@ class Moderation(commands.Cog):
             await ctx.send(f"✅ {role.mention} is now set as the admin role.")
     
     @commands.command()
-    @commands.has_permissions(administrator=True)
+    @commands.check(is_admin)
     @commands.guild_only()
     async def modrole(self, ctx, *, role: discord.Role=None):
         if role is None:
@@ -372,6 +372,56 @@ class Moderation(commands.Cog):
         await self.bot.database.set_setting("log_guild_id", str(channel.guild.id))
         await self.bot.database.set_setting("log_channel_id", str(channel.id))
         await ctx.send(f"✅ {channel.mention} is now the log channel.")
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.check(is_admin)
+    async def setupjail(self, ctx, jail_channel: discord.TextChannel, jail_role: discord.Role):
+        """Setup the jail feature."""
+        await self.bot.database.set_setting("jail_role_id", str(role.id))
+        
+        jail_deny_text = discord.PermissionOverwrite(read_messages=False)
+        jail_deny_voice = discord.PermissionOverwrite(connect=False)
+        jail_allow = discord.PermissionOverwrite(read_messages=True, send_messages=True)
+
+        msg = await ctx.send("🔄 Setting up permissions...")
+
+        for channel in ctx.guild.channels:
+            if isinstance(channel, discord.TextChannel):
+                if channel == jail_channel:
+                    await channel.set_permissions(jail_role, overwrite=jail_allow)
+                else:
+                    await channel.set_permissions(jail_role, overwrite=jail_deny_text)
+            elif isinstance(channel, discord.VoiceChannel):
+                await channel.set_permissions(jail_role, overwrite=jail_deny_voice)
+        
+        await msg.edit(content=f"✅ The jail is now setup!")
+    
+    @commands.command(aliases=["nursery"])
+    @commands.guild_only()
+    @commands.check(is_mod)
+    async def jail(self, ctx, *, member: discord.Member):
+        """Send a member of the server to jail."""
+        role = self.bot.database.settings.get("jail_role_id")
+        if not role:
+            await ctx.send("You need to setup the jail command with `-setupjail` before using this command!")
+        else:
+            role = ctx.guild.get_role(int(role))
+            await member.add_roles(role)
+        await ctx.send(f"👮 {member.mention} has been sent to nursery!")
+    
+    @commands.command()
+    @commands.guild_only()
+    @commands.check(is_mod)
+    async def unjail(self, ctx, *, member: discord.Member):
+        """Release a member of the server from jail."""
+        role = self.bot.database.settings.get("jail_role_id")
+        if not role:
+            await ctx.send("You need to setup the jail command with `-setupjail` before using this command!")
+        else:
+            role = ctx.guild.get_role(int(role))
+            await member.remove_roles(role)
+        await ctx.send(f"👮 {member.mention} has been released from nursery!")
 
     @tasks.loop(minutes=1, reconnect=True)
     async def check_expired_punishments(self):
