@@ -72,7 +72,7 @@ class Moderation(commands.Cog):
     
     @commands.command(hidden=True)
     @commands.guild_only()
-    @commands.check(is_admin)
+    @commands.is_owner()
     async def googleit(self, ctx, member: discord.Member):
         """Run this command and chaos will ensue."""
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
