@@ -100,7 +100,8 @@ class Database:
 
     async def add_helper_role(self, channel, role):
         """Add a helper role for a channel."""
-        if role.id in self.get_helper_roles(channel):
+        helper_roles = await self.get_helper_roles(channel)
+        if role.id in helper_roles:
             return
         await self.conn.execute("INSERT INTO helper_roles (guild_id, channel_id, role_id) VALUES ($1, $2, $3);",
                                 channel.guild.id, channel.id, role.id)
