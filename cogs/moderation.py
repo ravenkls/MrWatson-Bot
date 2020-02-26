@@ -378,7 +378,7 @@ class Moderation(commands.Cog):
     @commands.check(is_admin)
     async def setupjail(self, ctx, jail_channel: discord.TextChannel, jail_role: discord.Role):
         """Setup the jail feature."""
-        await self.bot.database.set_setting("jail_role_id", str(role.id))
+        await self.bot.database.set_setting("jail_role_id", str(jail_role.id))
         
         jail_deny_text = discord.PermissionOverwrite(read_messages=False)
         jail_deny_voice = discord.PermissionOverwrite(connect=False)
