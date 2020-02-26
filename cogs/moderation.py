@@ -408,7 +408,7 @@ class Moderation(commands.Cog):
         else:
             role = ctx.guild.get_role(int(role))
             await self.bot.database.add_jail_member(member)
-            await member.remove_roles(member.roles)
+            await member.remove_roles(*member.roles)
             await member.add_roles(role)
         await ctx.send(f"👮 {member.mention} has been sent to nursery!")
     
@@ -425,7 +425,7 @@ class Moderation(commands.Cog):
             previous_roles = [ctx.guild.get_role(rid) for rid in role_ids]
             jail_role = ctx.guild.get_role(int(role))
             await member.remove_roles(role)
-            await member.add_roles(previous_roles)
+            await member.add_roles(*previous_roles)
         await ctx.send(f"👮 {member.mention} has been released from nursery!")
 
     @tasks.loop(minutes=1, reconnect=True)
