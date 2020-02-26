@@ -407,7 +407,8 @@ class Moderation(commands.Cog):
             await ctx.send("You need to setup the jail command with `-setupjail` before using this command!")
         else:
             role = ctx.guild.get_role(int(role))
-            await self.bot.database.add_jail_member(member)
+            member_roles = member.roles
+            await self.bot.database.add_jail_member(member, member_roles)
             await member.remove_roles(*member.roles[1:])
             await member.add_roles(role)
         await ctx.send(f"👮 {member.mention} has been sent to nursery!")
