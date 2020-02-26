@@ -131,17 +131,25 @@ class Helpers(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.guild_only()
-    @commands.has_permissions(administrator=True)
+    @commands.check(is_admin)
     async def synchelperperms(self, ctx):
         results = await self.bot.database.conn.fetch("SELECT * FROM helper_roles;")
         perm_overwrite = discord.PermissionOverwrite(read_messages=True)
 
+        msg = await ctx.send("🔄 Setting up permissions...")
+
         for r in results:
             channel = ctx.guild.get_channel(r["channel_id"])
-            role = ctx.guild.get_role(r["role_id"])
-            await channel.set_permissions(role, overwrite=perm_overwrite)
+            if channel:
+                role = ctx.guild.get_role(r["role_id"])
+                if role:
+                    await channel.set_permissions(role, overwrite=perm_overwrite)
+                else:
+                    await self.bot.database.conn.execute("DELETE FROM helper_roles WHERE role_id=$1;", r["role_id"])
+            else:
+                await self.bot.database.conn.execute("DELETE FROM helper_roles WHERE channel_id=$1;", r["channel_id"])
         
-        await ctx.send("Done!")
+        await msg.edit(content=f"✅ Helper permissions are now in sync!")
 
     @commands.Cog.listener()
     async def on_message(self, message):
