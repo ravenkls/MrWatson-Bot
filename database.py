@@ -56,7 +56,7 @@ class Database:
     async def remove_jail_member(self, member):
         """Remove a member from jail and get their previous roles."""
         record = await self.conn.fetchrow("SELECT * FROM jail_members WHERE member_id=$1;", member.id)
-        role_ids = [int(rid) for rid in record["roles_string"].split(";")]
+        role_ids = [int(rid) for rid in record["roles"].split(";")]
         await self.conn.execute("DELETE FROM jail_members WHERE member_id=$1;", member.id)
         return role_ids
 
