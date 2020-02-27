@@ -73,8 +73,13 @@ class AssignRoles(commands.Cog):
                     self.logger.warning("Permission denied when adding roles.")
                 
                 if nick:
+                    nick_length = len(" || " + nick)
+                    max_nickname_length = 32 - nick_length
                     try:
-                        await payload.member.edit(nick=payload.member.name + " || " + nick)
+                        if payload.member.nick:
+                            await payload.member.edit(nick=payload.member.nick[:max_nickname_length] + " || " + nick)
+                        else:
+                            await payload.member.edit(nick=payload.member.name[:max_nickname_length] + " || " + nick)
                     except discord.errors.Forbidden:
                         self.logger.warning("Permission denied when setting nickname.")
                 

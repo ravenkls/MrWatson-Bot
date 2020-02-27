@@ -51,7 +51,7 @@ class Helpers(commands.Cog):
         for member_id, points in leaderboard:
             member = ctx.guild.get_member(member_id)
             if member:
-                embed.add_field(name=str(member), value=points, inline=False)
+                embed.add_field(name=str(member.nick if nick is not None else member.name), value=points, inline=False)
         await ctx.send(embed=embed)
     
     @commands.command(hidden=True)
