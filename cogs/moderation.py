@@ -454,27 +454,34 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.check(is_mod)
-    async def punishments(self, ctx):
+    async def punishments(self, ctx, page: int=1):
         """Get all ongoing punishments."""
         punishments = await self.bot.database.get_temporary_punishments()
+
+        pages = (len(punishments)-1) // 6 + 1
+        if page > pages:
+            page = pages
+        elif page < 1:
+            page = 1
+
         embed = discord.Embed(colour=0xFF0000, title="Ongoing Punishments")
-        for member_id, punishment_type, expiry_date in punishments:
-            member = ctx.guild.get_member(member_id)
-            if not member and punishment_type == self.BAN:
+        embed.set_footer(text=f"Page {page} of {pages}")
+        for p in punishments[(page-1)*6:page*6]:
+            member = ctx.guild.get_member(p["member_id"])
+            if not member and p["type"] == self.BAN:
                 bans = await ctx.guild.bans()
                 for b in bans:
-                    if b.user.id == member_id:
+                    if b.user.id == p["member_id"]:
                         member = b.user
                         break
                 else:
                     continue
             elif not member:
                 continue
-            delta = datetime.datetime.fromtimestamp(expiry_date) - datetime.datetime.now()
+            delta = datetime.datetime.fromtimestamp(p["expiry_date"]) - datetime.datetime.now()
             expires_in = humanize.naturaldelta(delta)
-            punishment_type = "MUTE" if punishment_type == self.MUTE else "BAN"
-            embed.add_field(name=member.name, value=f"Punishment Type: {punishment_type}\n"
-                                                    f"Expires in: {expires_in}")
+            punishment_type = "MUTE" if p["type"] == self.MUTE else "BAN"
+            embed.add_field(name=f"{member} ({punishment_type})", value=f"Expires in {expires_in}")
         await ctx.send(embed=embed)
 
     async def log(self, embed):

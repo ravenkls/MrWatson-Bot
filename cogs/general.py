@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 import psutil
 from googletrans import Translator
+import humanize
 
 from settings import *
 import asyncio
