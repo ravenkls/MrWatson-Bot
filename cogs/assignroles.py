@@ -99,25 +99,25 @@ class AssignRoles(commands.Cog):
                 message = channel.fetch_message(payload.message_id)
                 await message.remove_reaction(payload.emoji, payload.member)
     
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload):
-        check = await self.bot.database.check_reaction(payload.message_id, payload.emoji)
-        if check:
-            role_id, nick = check
-            guild = self.bot.get_guild(payload.guild_id)
-            role = guild.get_role(role_id)
-            member = guild.get_member(payload.user_id)
-            if not member.bot:
-                try:
-                    await member.remove_roles(role)
-                except discord.errors.Forbidden:
-                    self.logger.warning("Permission denied when removing role.")
+    # @commands.Cog.listener()
+    # async def on_raw_reaction_remove(self, payload):
+    #     check = await self.bot.database.check_reaction(payload.message_id, payload.emoji)
+    #     if check:
+    #         role_id, nick = check
+    #         guild = self.bot.get_guild(payload.guild_id)
+    #         role = guild.get_role(role_id)
+    #         member = guild.get_member(payload.user_id)
+    #         if not member.bot:
+    #             try:
+    #                 await member.remove_roles(role)
+    #             except discord.errors.Forbidden:
+    #                 self.logger.warning("Permission denied when removing role.")
             
-                if nick:
-                    try:
-                        await member.edit(nick=None)
-                    except discord.errors.Forbidden:
-                        self.logger.warning("Permission denied when setting nickname.")
+    #             if nick:
+    #                 try:
+    #                     await member.edit(nick=None)
+    #                 except discord.errors.Forbidden:
+    #                     self.logger.warning("Permission denied when setting nickname.")
 
 def setup(bot):
     bot.add_cog(AssignRoles(bot))
