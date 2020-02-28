@@ -247,6 +247,18 @@ class Moderation(commands.Cog):
     
     @commands.command()
     @commands.guild_only()
+    @commands.check(is_admin)
+    async def hackban(self, ctx, user_id: int, *, reason="None"):
+        """Ban a user permanently from the server who is not in the server currently."""
+        user = discord.Object(id=user_id)
+        await ctx.guild.ban(member, reason=f"Banned by {ctx.author}. Reason: {reason}")
+        await ctx.send(f"✅ User with ID {user_id} has been permanently banned. Reason: {reason}")
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                              description=f"🛠️ User with ID {user_id} was banned from the server permanently by {ctx.author.mention}. Reason: {reason}")
+        await self.log(embed)
+
+    @commands.command()
+    @commands.guild_only()
     @commands.check(is_mod)
     async def mute(self, ctx, member: discord.Member, *, reason="None", flags=None):
         """Mute a member in the server, to make the mute temporary, add the `-t` flag to the end.
