@@ -17,6 +17,7 @@ bs4 = "*"
 asyncpg = "*"
 psutil = "*"
 googletrans = "*"
+humanize = "*"
 
 [requires]
 python_version = "3.8"

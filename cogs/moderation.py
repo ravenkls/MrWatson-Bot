@@ -7,6 +7,7 @@ import time
 import discord
 from discord.ext import commands, tasks
 import aiohttp
+import humanize
 
 from settings import *
 
@@ -469,10 +470,11 @@ class Moderation(commands.Cog):
                     continue
             elif not member:
                 continue
-            date = datetime.datetime.fromtimestamp(expiry_date)
+            delta = datetime.datetime.fromtimestamp(expiry_date) - datetime.datetime.now()
+            expires_in = humanize.naturaldelta(delta)
             punishment_type = "MUTE" if punishment_type == self.MUTE else "BAN"
             embed.add_field(name=member.name, value=f"Punishment Type: {punishment_type}\n"
-                                                    f"Expiry Date: {date.strftime('%d %B %Y %H:%M')}")
+                                                    f"Expires in: {expires_in}")
         await ctx.send(embed=embed)
 
     async def log(self, embed):

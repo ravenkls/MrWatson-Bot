@@ -312,7 +312,7 @@ class General(commands.Cog):
         cpu_usage = psutil.cpu_percent()
         ram_usage = psutil.virtual_memory().percent
         latency = self.bot.latency
-        uptime = datetime.timedelta(seconds=time.time() - self.start_time)
+        uptime = humanize.naturaldelta(datetime.timedelta(seconds=time.time() - self.start_time))
         python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title="Bot Information")
         embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url_as(format='png', static_format='png'))
@@ -339,12 +339,8 @@ class General(commands.Cog):
     @commands.command(description="Shows how long I've been online for")
     async def uptime(self, ctx):
         """View how long that bot has been online for."""
-        s = time.time() - self.start_time
-        m, s = divmod(s, 60)
-        h, m = divmod(m, 60)
-        d, h = divmod(h, 24)
-        d, h, m, s = map(int, (d, h, m, s))
-        uptime_embed = discord.Embed(description=":clock5:  **Ive been online for:**  {}d {}h {}m {}s".format(d, h, m, s), colour=EMBED_ACCENT_COLOUR)
+        uptime = humanize.naturaldelta(datetime.timedelta(seconds=time.time() - self.start_time))
+        uptime_embed = discord.Embed(description=f":clock5:  **Ive been online for:** {uptime}", colour=EMBED_ACCENT_COLOUR)
         await ctx.send(embed=uptime_embed)
 
     @commands.command(name="eval", hidden=True)
