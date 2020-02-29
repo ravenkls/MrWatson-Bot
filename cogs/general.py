@@ -404,23 +404,27 @@ class General(commands.Cog):
 
         role_ids = await self.bot.database.get_demographic_roles()
         roles = [ctx.guild.get_role(r) for r in role_ids]
-        role_names = [r.name for r in roles]
-        role_numbers = [len(r.members) for r in roles]
-        demographics_graph = await self.get_demographics_graph(ctx.guild, role_names, role_numbers)
+        
+        demographics_graph = await self.get_demographics_graph(ctx.guild, roles)
 
         await ctx.send(content=f"{len(ctx.guild.members)} members in total", file=discord.File(demographics_graph, filename='demographics.png'))
     
-    async def get_demographics_graph(self, guild, names, numbers):
+    async def get_demographics_graph(self, guild, roles):
+
+        names = [r.name for r in roles]
+        colours = [tuple([c/255 for c in r.colour.to_rgb()]) for r in roles]
+        numbers = [len(r.members) for r in roles]
+
         fig = plt.figure()
 
         x = names
         y = numbers
         x_pos = [i for i, _ in enumerate(x)]
-
+ 
         ax = fig.add_subplot(111)
 
         ax.set_title(f"Demographics for {guild.name}")
-        ax.bar(x_pos, y)
+        ax.bar(x_pos, y, color=colours, edgecolor=colours)
         ax.set_xticks(x_pos)
         ax.set_xticklabels(x, rotation=45)
 
