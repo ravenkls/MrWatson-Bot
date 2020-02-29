@@ -257,7 +257,7 @@ class Moderation(commands.Cog):
             return
 
         read_overwrite = discord.PermissionOverwrite(read_messages=False)
-        await channel.set_permissions(member, read_overwrite)
+        await channel.set_permissions(member, overwrite=read_overwrite)
         await ctx.send(f"✅ {member} has been banned from {channel.mention}. Reason: {reason}")
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                               description=f"💬 {member.mention} was banned from {channel.mention} by {ctx.author.mention}. Reason: {reason}")
@@ -543,7 +543,7 @@ class Moderation(commands.Cog):
         total_time = -1
         
         parser = argparse.ArgumentParser()
-        parser.add_argument("reason", nargs="*", default="None")
+        parser.add_argument("reason", nargs="*", default=["None"])
         parser.add_argument("--time", "-t", nargs="*")
         parsed = parser.parse_known_args(reason.split())[0]
 
