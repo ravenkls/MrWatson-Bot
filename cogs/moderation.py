@@ -33,6 +33,7 @@ class Moderation(commands.Cog):
 
     BAN = "b"
     MUTE = "m"
+    CHANNEL_BAN = "c"
 
     def __init__(self, bot):
         self.bot = bot
@@ -248,10 +249,35 @@ class Moderation(commands.Cog):
     
     @commands.command()
     @commands.guild_only()
-    @commands.check(is_mod)
-    async def channelban(self):
-        pass
+    @commands.check(is_admin)
+    async def channelban(self, ctx, member: discord.Member, channel: discord.TextChannel, *, reason="None"):
+        """Ban a user from a text channel."""
+        if ctx.author.top_role <= member.top_role:
+            await ctx.send("You cannot channel ban this user.")
+            return
 
+        read_overwrite = discord.PermissionOverwrite(read_messages=False)
+        await channel.set_permissions(member, read_overwrite)
+        await ctx.send(f"✅ {member} has been banned from {channel.mention}. Reason: {reason}")
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                              description=f"💬 {member.mention} was banned from {channel.mention} by {ctx.author.mention}. Reason: {reason}")
+        await self.log(embed)
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.check(is_admin)
+    async def unchannelban(self, ctx, member: discord.Member, channel: discord.TextChannel):
+        """Unban a user from a text channel."""
+        if ctx.author.top_role <= member.top_role:
+            await ctx.send("You cannot channel ban this user.")
+            return
+        
+        await channel.set_permissions(member, overwrite=None)
+        await ctx.send(f"✅ {member} has been unbanned from {channel.mention}")
+        embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
+                              description=f"💬 {member.mention} was unbanned from {channel.mention} by {ctx.author.mention}")
+        await self.log(embed)
+        
     @commands.command()
     @commands.guild_only()
     @commands.check(is_admin)
