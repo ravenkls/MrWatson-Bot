@@ -639,7 +639,7 @@ class Moderation(commands.Cog):
 
         parsed_reason = " ".join(parsed.reason)
 
-        if parsed_time:
+        if parsed.time:
             parsed_time = " ".join(parsed.time)
             times = re.findall(r"(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?", parsed_time)
             weeks = 0
