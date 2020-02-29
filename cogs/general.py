@@ -4,6 +4,7 @@ import time
 from io import BytesIO
 import datetime
 import sys
+import argparse
 
 import discord
 from discord.ext import commands
@@ -166,6 +167,13 @@ class General(commands.Cog):
         """Search wikipedia with a query."""
         await ctx.trigger_typing()
 
+        parser = argparse.ArgumentParser()
+        parser.add_argument("query", nargs="*")
+        parser.add_argument("--sentences", "-s", type=int, default=1)
+        parsed = parser.parse_known_args(query.split())
+        query = parsed.query
+        sentences = parsed.sentences
+
         async with aiohttp.ClientSession() as session:
             params = {
                 "action": "query",
@@ -253,11 +261,11 @@ class General(commands.Cog):
                         url = data["query"]["pages"][str(pageid)]["fullurl"]
 
             params = {"action": "query",
-                    "prop": "extracts",
-                    "explaintext": "",
-                    "exsentences": 1,
-                    "titles": title,
-                    "format": "json"}
+                      "prop": "extracts",
+                      "explaintext": "",
+                      "exsentences": sentences,
+                      "titles": title,
+                      "format": "json"}
 
             async with session.get("https://en.wikipedia.org/w/api.php", params=params) as r:
                 data = await r.json()
@@ -266,6 +274,10 @@ class General(commands.Cog):
             embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, title=title, description=summary)
             embed.set_author(name="Wikipedia", url=url, icon_url="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
             await ctx.send(embed=embed)
+
+    @commands.command()
+    async def weather(self, ctx, *, location):
+        pass
 
     @commands.command()
     async def list(self, ctx, *, role):

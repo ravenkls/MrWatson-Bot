@@ -3,6 +3,7 @@ import datetime
 import logging
 import re
 import time
+import argparse
 
 import discord
 from discord.ext import commands, tasks
@@ -508,14 +509,14 @@ class Moderation(commands.Cog):
     def parse_reason_with_time_flags(self, reason):
         expiry_time = -1
         total_time = -1
-        reason_split = reason.strip().split("-t")
-        reason = reason_split[0]
-        if reason.strip() == "":
-            reason = "None"
-        if len(reason_split) > 1:
-            time_flag = reason_split[1]
-            times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', time_flag)
+        
+        parser = argparse.ArgumentParser()
+        parser.add_argument("reason", nargs="*", default="None")
+        parser.add_argument("-t", "--time", nargs="*")
+        parsed = parser.parse_known_args(reason.split())
 
+        if parsed.time > 1:
+            times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', parsed.time)
             weeks = 0
             days = 0
             hours = 0
@@ -532,14 +533,7 @@ class Moderation(commands.Cog):
             total_time = datetime.timedelta(days=7*weeks + days, hours=hours, minutes=minutes)
             expiry_time = time.time() + total_time.total_seconds()
 
-        return reason, total_time, expiry_time
-
-    async def get_banned_websites(self):
-        async with aiohttp.ClientSession() as session:
-            async with session.get("https://blocklist.site/app/dl/porn") as response:
-                websites = await response.text().split("\n")
-        
-        self.banned_websites = websites
+        return parsed.reason, total_time, expiry_time
 
 def setup(bot):
     bot.add_cog(Moderation(bot))
