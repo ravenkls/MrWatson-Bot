@@ -40,7 +40,7 @@ class Helpers(commands.Cog):
         if member is None:
             member = ctx.author
         rep_count = await self.bot.database.get_reps(member)
-        await ctx.send(f"{member} has `{rep_count}` reputation points.")
+        await ctx.send(f"{member.name} has `{rep_count}` reputation points.")
 
     @commands.command()
     async def leaderboard(self, ctx):
@@ -197,7 +197,7 @@ class Helpers(commands.Cog):
                     embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                           description=f"🏅 {ctx.author.mention} added {amount} reputation points from {member.mention}")
                 await self.bot.get_cog("Moderation").log(embed)
-                await ctx.send(f"✅ **{member}** now has `{new_points}` reputation points!")
+                await ctx.send(f"✅ {member.mention} now has `{new_points}` reputation points!")
             elif args[0].lower() == "clear":
                 await self.remove_all_reps(ctx)
 

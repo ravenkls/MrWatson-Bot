@@ -50,14 +50,14 @@ class AssignRoles(commands.Cog):
         if nickname is None:
             year = member.nick.split("||")[-1].strip()
             if member.name + " || " + year == member.nick:
-                await ctx.send(f"{member} already has no nickname! To assign a nickname type `-nickname <nickname>`")
+                await ctx.send(f"{member.mention} already has no nickname! To assign a nickname type `-nickname <nickname>`")
             else:
                 await member.edit(nick=member.name + " || " + year)
-                await ctx.send(f"{member}'s nickname has been reset.")
+                await ctx.send(f"The nickname for {member.mention} has been reset.")
         else:
             year = member.nick.split("||")[-1].strip()
             await member.edit(nick=nickname + " || " + year)
-            await ctx.send(f"{member}'s nickname has been set!")
+            await ctx.send(f"The nickname for {member.mention} has been set!")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

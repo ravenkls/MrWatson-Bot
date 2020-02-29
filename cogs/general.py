@@ -408,7 +408,7 @@ class General(commands.Cog):
         role_numbers = [len(r.members) for r in roles]
         demographics_graph = await self.get_demographics_graph(ctx.guild, role_names, role_numbers)
 
-        await ctx.send(content=f"{sum(role_numbers)} members in total", file=discord.File(demographics_graph, filename='demographics.png'))
+        await ctx.send(content=f"{len(ctx.guild.members)} members in total", file=discord.File(demographics_graph, filename='demographics.png'))
     
     async def get_demographics_graph(self, guild, names, numbers):
         fig = plt.figure()

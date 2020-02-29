@@ -125,7 +125,7 @@ class Moderation(commands.Cog):
             last_warning_time = datetime.datetime.fromtimestamp(last_warning[2]).strftime("%d %B %Y")
             embed = discord.Embed(title="List of previously given warnings",
                                   colour=0xd0021b, 
-                                  description=f"{member} has `{len(warnings)}` warnings.\n"
+                                  description=f"{member.mention} has `{len(warnings)}` warnings.\n"
                                               f"Their last warning was given on {last_warning_time}")
             embed.set_thumbnail(url=member.avatar_url_as(format='png', static_format='png'))
             embed.set_author(name=str(member), icon_url=member.avatar_url_as(format='png', static_format='png'))
@@ -153,7 +153,7 @@ class Moderation(commands.Cog):
                 for w in warnings:
                     timestamp = w[-1]
                     await self.bot.database.remove_warning(member, timestamp)
-                await ctx.send(f"✅ All warnings for {member} have been removed.")
+                await ctx.send(f"✅ All warnings for {member.mention} have been removed.")
                 embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                         description=f"⚠️ {ctx.author.mention} removed all warnings from {member.mention}")
                 await self.log(embed)
@@ -171,7 +171,7 @@ class Moderation(commands.Cog):
             else:
                 author_id, reason, timestamp = warning
                 await self.bot.database.remove_warning(member, timestamp)
-                await ctx.send(f"✅ The warning given to {member} by {ctx.guild.get_member(author_id)} "
+                await ctx.send(f"✅ The warning given to {member.mention} by {ctx.guild.get_member(author_id)} "
                                f"for reason: \"{reason}\" has been removed.")
                            
                 embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
@@ -258,7 +258,7 @@ class Moderation(commands.Cog):
 
         read_overwrite = discord.PermissionOverwrite(read_messages=False)
         await channel.set_permissions(member, overwrite=read_overwrite)
-        await ctx.send(f"✅ {member} has been banned from {channel.mention}. Reason: {reason}")
+        await ctx.send(f"✅ {member.mention} has been banned from {channel.mention}. Reason: {reason}")
         embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                               description=f"💬 {member.mention} was banned from {channel.mention} by {ctx.author.mention}. Reason: {reason}")
         await self.log(embed)
@@ -317,11 +317,11 @@ class Moderation(commands.Cog):
         await member.add_roles(role, reason=f"Muted by {ctx.author}. Reason: {reason}")
         if expiry_time >= 0:
             await self.bot.database.new_punishment(member, self.MUTE, expiry_time)
-            await ctx.send(f"✅ {member} has been muted for {str(total_time)}. Reason: {reason}")
+            await ctx.send(f"✅ {member.mention} has been muted for {str(total_time)}. Reason: {reason}")
             embed = discord.Embed(colour=EMBED_ACCENT_COLOUR, 
                                   description=f"🙊 {member.mention} was muted in all text channels for {str(total_time)} by {ctx.author.mention}. Reason: {reason}")
         else:
-            await ctx.send(f"✅ {member} has been muted indefinitely. Reason: {reason}")
+            await ctx.send(f"✅ {member.mention} has been muted indefinitely. Reason: {reason}")
             embed = discord.Embed(colour=EMBED_ACCENT_COLOUR,
                                   description=f"🙊 {member.mention} was muted in all text channels indefinitely by {ctx.author.mention}. Reason: {reason}")
         await self.log(embed)
@@ -341,12 +341,12 @@ class Moderation(commands.Cog):
             await ctx.send("You haven't set a mute role yet, do this using the `-muterole` command!")
             return
         elif res:
-            await ctx.send(f"✅ {member} has been unmuted")
+            await ctx.send(f"✅ {member.mention} has been unmuted")
             embed = discord.Embed(colour=EMBED_ACCENT_COLOUR,
-                                description=f"🙊 {member} was unmuted by {ctx.author.mention}.")
+                                description=f"🙊 {member.mention} was unmuted by {ctx.author.mention}.")
             await self.log(embed)
         else:
-            await ctx.send(f"{member} isn't muted.")
+            await ctx.send(f"{member.mention} isn't muted.")
 
     async def unmute_member(self, member: discord.Member):
         mute_role_guild = self.bot.database.settings.get('guild_mute_role_id')
