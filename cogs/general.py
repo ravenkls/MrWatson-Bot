@@ -171,7 +171,7 @@ class General(commands.Cog):
         parser.add_argument("query", nargs="*")
         parser.add_argument("--sentences", "-s", type=int, default=1)
         parsed = parser.parse_known_args(query.split())[0]
-        query = parsed.query
+        query = " ".join(parsed.query)
         sentences = parsed.sentences
 
         async with aiohttp.ClientSession() as session:
