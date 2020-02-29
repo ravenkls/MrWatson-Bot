@@ -637,10 +637,10 @@ class Moderation(commands.Cog):
         parser.add_argument("--time", "-t", nargs="*")
         parsed = parser.parse_known_args(reason.split())[0]
 
-        parsed_time = " ".join(parsed.time)
         parsed_reason = " ".join(parsed.reason)
 
         if parsed_time:
+            parsed_time = " ".join(parsed.time)
             times = re.findall(r"(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?", parsed_time)
             weeks = 0
             days = 0
