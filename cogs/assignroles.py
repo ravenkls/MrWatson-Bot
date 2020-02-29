@@ -25,15 +25,17 @@ class AssignRoles(commands.Cog):
         self.bot = bot
         self.logger = logging.getLogger(__name__)
         self.logger.info("AssignRoles cog initialised.")
-    
+
     @commands.command(hidden=True)
     @commands.guild_only()
     @commands.check(is_admin)
-    async def addrolereaction(self, ctx, message_id: int, emoji, role: discord.Role, *, nick=None):
+    async def addrolereaction(
+        self, ctx, message_id: int, emoji, role: discord.Role, *, nick=None
+    ):
         message = await ctx.channel.fetch_message(message_id)
         await self.bot.database.add_role_reaction(message.id, emoji, role, nick)
         await message.add_reaction(emoji)
-    
+
     @commands.command(hidden=True)
     @commands.guild_only()
     @commands.check(is_admin)
@@ -50,7 +52,9 @@ class AssignRoles(commands.Cog):
         if nickname is None:
             year = member.nick.split("||")[-1].strip()
             if member.name + " || " + year == member.nick:
-                await ctx.send(f"{member.mention} already has no nickname! To assign a nickname type `-nickname <nickname>`")
+                await ctx.send(
+                    f"{member.mention} already has no nickname! To assign a nickname type `-nickname <nickname>`"
+                )
             else:
                 await member.edit(nick=member.name + " || " + year)
                 await ctx.send(f"The nickname for {member.mention} has been reset.")
@@ -61,7 +65,9 @@ class AssignRoles(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        check = await self.bot.database.check_reaction(payload.message_id, payload.emoji)
+        check = await self.bot.database.check_reaction(
+            payload.message_id, payload.emoji
+        )
         if check:
             role_id, nick = check
             guild = self.bot.get_guild(payload.guild_id)
@@ -71,22 +77,31 @@ class AssignRoles(commands.Cog):
                     await payload.member.add_roles(role)
                 except discord.errors.Forbidden:
                     self.logger.warning("Permission denied when adding roles.")
-                
+
                 if nick:
                     nick_length = len(" || " + nick)
                     max_nickname_length = 32 - nick_length
                     try:
                         if payload.member.nick:
-                            await payload.member.edit(nick=payload.member.nick[:max_nickname_length] + " || " + nick)
+                            await payload.member.edit(
+                                nick=payload.member.nick[:max_nickname_length]
+                                + " || "
+                                + nick
+                            )
                         else:
-                            await payload.member.edit(nick=payload.member.name[:max_nickname_length] + " || " + nick)
+                            await payload.member.edit(
+                                nick=payload.member.name[:max_nickname_length]
+                                + " || "
+                                + nick
+                            )
                     except discord.errors.Forbidden:
                         self.logger.warning("Permission denied when setting nickname.")
-                
-    
+
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
-        check = await self.bot.database.check_reaction(payload.message_id, payload.emoji)
+        check = await self.bot.database.check_reaction(
+            payload.message_id, payload.emoji
+        )
         if check:
             role_id, nick = check
             guild = self.bot.get_guild(payload.guild_id)
@@ -97,12 +112,13 @@ class AssignRoles(commands.Cog):
                     await member.remove_roles(role)
                 except discord.errors.Forbidden:
                     self.logger.warning("Permission denied when removing role.")
-            
+
                 if nick:
                     try:
                         await member.edit(nick=None)
                     except discord.errors.Forbidden:
                         self.logger.warning("Permission denied when setting nickname.")
+
 
 def setup(bot):
     bot.add_cog(AssignRoles(bot))

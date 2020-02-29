@@ -10,8 +10,10 @@ class Bot(commands.Bot):
     database = Database()
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format="[%(levelname)s] [%(name)s] %(message)s")
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO, format="[%(levelname)s] [%(name)s] %(message)s"
+    )
 
     bot = Bot(command_prefix="-")
     bot.load_extension("cogs.general")
