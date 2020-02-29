@@ -248,6 +248,12 @@ class Moderation(commands.Cog):
     
     @commands.command()
     @commands.guild_only()
+    @commands.check(is_mod)
+    async def channelban(self):
+        pass
+
+    @commands.command()
+    @commands.guild_only()
     @commands.check(is_admin)
     async def hackban(self, ctx, user_id: int, *, reason="None"):
         """Ban a user permanently from the server who is not in the server currently."""
@@ -512,10 +518,10 @@ class Moderation(commands.Cog):
         
         parser = argparse.ArgumentParser()
         parser.add_argument("reason", nargs="*", default="None")
-        parser.add_argument("-t", "--time", nargs="*")
-        parsed = parser.parse_known_args(reason.split())
+        parser.add_argument("--time", "-t", nargs="*")
+        parsed = parser.parse_known_args(reason.split())[0]
 
-        if parsed.time > 1:
+        if parsed.time:
             times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', parsed.time)
             weeks = 0
             days = 0

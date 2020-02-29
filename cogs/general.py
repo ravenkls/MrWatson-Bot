@@ -170,7 +170,7 @@ class General(commands.Cog):
         parser = argparse.ArgumentParser()
         parser.add_argument("query", nargs="*")
         parser.add_argument("--sentences", "-s", type=int, default=1)
-        parsed = parser.parse_known_args(query.split())
+        parsed = parser.parse_known_args(query.split())[0]
         query = parsed.query
         sentences = parsed.sentences
 
