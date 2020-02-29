@@ -547,8 +547,11 @@ class Moderation(commands.Cog):
         parser.add_argument("--time", "-t", nargs="*")
         parsed = parser.parse_known_args(reason.split())[0]
 
-        if parsed.time:
-            times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', parsed.time)
+        parsed_time = " ".join(parsed.time)
+        parsed_reason = " ".join(parsed.reason)
+
+        if parsed_time:
+            times = re.findall(r'(?:\d+w)?(?:\d+d)?(?:\d+h)?(?:\d+m)?', parsed_time)
             weeks = 0
             days = 0
             hours = 0
@@ -565,7 +568,7 @@ class Moderation(commands.Cog):
             total_time = datetime.timedelta(days=7*weeks + days, hours=hours, minutes=minutes)
             expiry_time = time.time() + total_time.total_seconds()
 
-        return parsed.reason, total_time, expiry_time
+        return parsed_reason, total_time, expiry_time
 
 def setup(bot):
     bot.add_cog(Moderation(bot))
