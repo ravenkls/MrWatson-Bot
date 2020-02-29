@@ -1,5 +1,3 @@
-# Mr Watson Bot
-
 <div align="center">
     <p><img src="https://i.imgur.com/W043mAn.png" width=500/></p>
     <p>
