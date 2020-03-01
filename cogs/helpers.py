@@ -262,7 +262,7 @@ class Helpers(commands.Cog):
             channel = guild.get_channel(int(channel_id))
             embed = discord.Embed(
                 colour=EMBED_ACCENT_COLOUR,
-                description=f"👍 {message.author.mention} repped {reciever.mention} ([Jump to message]({message.jump_url}))",
+                description=f"👍 {message.author.mention} repped {receiver.mention} ([Jump to message]({message.jump_url}))",
             )
             await channel.send(embed=embed)
 
