@@ -501,6 +501,15 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.check(is_admin)
+    async def repchannel(self, ctx, channel: discord.TextChannel):
+        """Set the channel in which rep logs are sent."""
+        await self.bot.database.set_setting("replog_guild_id", str(channel.guild.id))
+        await self.bot.database.set_setting("replog_channel_id", str(channel.id))
+        await ctx.send(f"✅ {channel.mention} is now the reps log channel.")
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.check(is_admin)
     async def setupjail(
         self, ctx, jail_channel: discord.TextChannel, jail_role: discord.Role
     ):

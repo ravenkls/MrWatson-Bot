@@ -31,6 +31,7 @@ class Helpers(commands.Cog):
 
         reps = await self.bot.database.add_rep(member)
         await ctx.send(f"✅ **{member.mention}** now has `{reps}` reputation points!")
+        await self.log_rep(ctx.message, member)
 
     @commands.command()
     @commands.guild_only()
@@ -252,6 +253,18 @@ class Helpers(commands.Cog):
                 )
         finally:
             await temp.delete()
+
+    async def log_rep(self, message, receiver):
+        guild_id = self.bot.database.settings.get("replog_guild_id")
+        channel_id = self.bot.database.settings.get("replog_channel_id")
+        if guild_id:
+            guild = self.bot.get_guild(int(guild_id))
+            channel = guild.get_channel(int(channel_id))
+            embed = discord.Embed(
+                colour=EMBED_ACCENT_COLOUR,
+                description=f"👍 {message.author.mention} repped {reciever.mention} ([Jump to message]({message.jump_url}))",
+            )
+            await channel.send(embed=embed)
 
 
 def setup(bot):
