@@ -63,12 +63,13 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         unlock_role_id = self.bot.database.settings.get("unlock_role")
-        unlock_role = before.guild.get_role(int(unlock_role_id))
-        if unlock_role in before.roles and unlock_role not in after.roles:
-            welcome_channel = self.bot.database.settings.get("welcome_channel")
-            if welcome_channel:
-                channel = before.guild.get_channel(int(welcome_channel))
-                await channel.purge(limit=100, check=lambda: m.author == before)
+        if unlock_role_id:
+            unlock_role = before.guild.get_role(int(unlock_role_id))
+            if unlock_role in before.roles and unlock_role not in after.roles:
+                welcome_channel = self.bot.database.settings.get("welcome_channel")
+                if welcome_channel:
+                    channel = before.guild.get_channel(int(welcome_channel))
+                    await channel.purge(limit=100, check=lambda: m.author == before)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
