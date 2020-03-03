@@ -36,6 +36,14 @@ class Events(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.check(is_admin)
+    async def unlockrole(self, ctx, unlock_role: discord.Role):
+        """Specify the role which is removed in order to unlock the server."""
+        await self.bot.database.set_setting("unlock_role", str(unlock_role.id))
+        await ctx.send(f"{unlock_role.mention} is now the unlock role.")
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.check(is_admin)
     async def welcomemessage(
         self, ctx, message: str = None, channel: discord.TextChannel = None
     ):
@@ -51,6 +59,16 @@ class Events(commands.Cog):
         else:
             message = self.bot.database.settings.get("welcome_message")
             await ctx.send(message)
+
+    @commands.Cog.listener()
+    async def on_member_update(self, before, after):
+        unlock_role_id = self.bot.database.settings.get("unlock_role")
+        unlock_role = before.guild.get_role(int(unlock_role_id))
+        if unlock_role in before.roles and unlock_role not in after.roles:
+            welcome_channel = self.bot.database.settings.get("welcome_channel")
+            if welcome_channel:
+                channel = before.guild.get_channel(int(welcome_channel))
+                await channel.purge(limit=100, check=lambda: m.author == before)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
