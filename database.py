@@ -145,14 +145,13 @@ class Database:
         )
 
     async def remove_join_role(self, role):
-        await self.conn.execute(
-            "DELETE FROM join_roles WHERE role_id=$1", role.id
-        )
+        await self.conn.execute("DELETE FROM join_roles WHERE role_id=$1", role.id)
 
     async def get_join_roles(self):
         result = await self.conn.fetch("SELECT role_id FROM join_roles;")
         if result:
             return [r["role_id"] for r in result]
+        return []
 
     async def add_helper_role(self, channel, role):
         """Add a helper role for a channel."""
