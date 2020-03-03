@@ -17,7 +17,6 @@ async def is_admin(ctx):
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.check_expired_punishments.start()
         self.logger = logging.Logger(__name__)
         self.logger.info("Events cog initialised.")
 
