@@ -374,6 +374,11 @@ class General(commands.Cog):
         pass
 
     @commands.command()
+    async def poll(self, ctx, *, question, flags=None):
+        """Start a poll."""
+        raise NotImplementedError
+
+    @commands.command()
     async def list(self, ctx, *, role):
         """List all the members of a role."""
         names = [r.name for r in ctx.guild.roles][1:]

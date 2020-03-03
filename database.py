@@ -51,6 +51,9 @@ class Database:
         await self.conn.execute(
             "CREATE TABLE IF NOT EXISTS jail_members (member_id BIGINT PRIMARY KEY, roles TEXT);"
         )
+        await self.conn.execute(
+            "CREATE TABLE IF NOT EXISTS join_roles (role_id BIGINT PRIMARY KEY);"
+        )
 
     async def get_tables(self):
         """Retrieve all table names."""
@@ -133,6 +136,21 @@ class Database:
 
     async def get_demographic_roles(self):
         result = await self.conn.fetch("SELECT role_id FROM demographic_roles;")
+        if result:
+            return [r["role_id"] for r in result]
+
+    async def add_join_role(self, role):
+        await self.conn.execute(
+            "INSERT INTO join_roles (role_id) VALUES ($1);", role.id
+        )
+
+    async def remove_join_role(self, role):
+        await self.conn.execute(
+            "DELETE FROM join_roles WHERE role_id=$1", role.id
+        )
+
+    async def get_join_roles(self):
+        result = await self.conn.fetch("SELECT role_id FROM join_roles;")
         if result:
             return [r["role_id"] for r in result]
 
