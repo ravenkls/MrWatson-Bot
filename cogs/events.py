@@ -5,6 +5,7 @@ import logging
 from settings import *
 import asyncio
 
+
 async def is_admin(ctx):
     role_id = ctx.bot.database.settings.get("admin_role_id")
     role = ctx.guild.get_role(int(role_id))
@@ -35,15 +36,19 @@ class Events(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.check(is_admin):
-    async def welcomemessage(self, ctx, message: str=None, channel: discord.TextChannel=None):
+    @commands.check(is_admin)
+    async def welcomemessage(
+        self, ctx, message: str = None, channel: discord.TextChannel = None
+    ):
         """View or set the welcome message."""
         if message is not None:
             if channel is not None:
                 await self.bot.database.set_setting("welcome_message", message)
                 await self.bot.database.set_setting("welcome_channel", str(channel.id))
             else:
-                await ctx.send("Please specify the channel to send the welcome message!")
+                await ctx.send(
+                    "Please specify the channel to send the welcome message!"
+                )
         else:
             message = self.bot.database.settings.get("welcome_message")
             await ctx.send(message)
@@ -56,9 +61,14 @@ class Events(commands.Cog):
 
         await asyncio.sleep(0.5)
 
-        format_names = {"server", member.guild.name,
-                        "member", member.mention,
-                        "member_count", len(member.guild.members)}
+        format_names = {
+            "server",
+            member.guild.name,
+            "member",
+            member.mention,
+            "member_count",
+            len(member.guild.members),
+        }
 
         welcome_message = self.bot.database.settings.get("welcome_message")
         welcome_channel = self.bot.database.settings.get("welcome_channel")
@@ -66,6 +76,6 @@ class Events(commands.Cog):
             channel = member.guild.get_channel(int(welcome_channel))
             await channel.send(welcome_message.format(**format_names))
 
-            
+
 def setup(bot):
     bot.add_cog(Events(bot))
