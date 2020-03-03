@@ -69,7 +69,7 @@ class Events(commands.Cog):
                 welcome_channel = self.bot.database.settings.get("welcome_channel")
                 if welcome_channel:
                     channel = before.guild.get_channel(int(welcome_channel))
-                    await channel.purge(limit=100, check=lambda: m.author == before)
+                    await channel.purge(limit=100, check=lambda m: m.author == before)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
