@@ -61,12 +61,9 @@ class Events(commands.Cog):
         await asyncio.sleep(0.5)
 
         format_names = {
-            "server",
-            member.guild.name,
-            "member",
-            member.mention,
-            "member_count",
-            len(member.guild.members),
+            "server": member.guild.name,
+            "member": member.mention,
+            "member_count": len(member.guild.members),
         }
 
         welcome_message = self.bot.database.settings.get("welcome_message")
