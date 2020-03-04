@@ -103,6 +103,16 @@ class Moderation(commands.Cog):
         if ctx.author.top_role <= member.top_role:
             await ctx.send("You cannot warn this user.")
             return
+
+        current_warnings = await self.bot.database.get_warnings(member)
+        current_amount = len(current_warnings)
+        if current_amount == 4:
+            reason += " (5TH WARNING)"
+        elif current_amount == 9:
+            reason += " (10TH WARNING)
+        elif current_amount == 14:
+            reason += " (11TH WARNING)"
+
         await self.bot.database.add_warning(member, ctx.author, reason)
         await ctx.send(f"⚠️ {member.mention} has been warned. Reason: {reason}")
         await member.send(f"⚠️ You have been warned by {ctx.author}. Reason: {reason}")
