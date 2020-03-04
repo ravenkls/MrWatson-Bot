@@ -109,7 +109,7 @@ class Moderation(commands.Cog):
         if current_amount == 4:
             reason += " (5TH WARNING)"
         elif current_amount == 9:
-            reason += " (10TH WARNING)
+            reason += " (10TH WARNING)"
         elif current_amount == 14:
             reason += " (11TH WARNING)"
 
