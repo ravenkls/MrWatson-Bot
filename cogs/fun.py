@@ -1,11 +1,20 @@
+import argparse
 import logging
 import re
+from io import BytesIO
 
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
 from discord.ext import commands
-from io import BytesIO
+
+
+async def is_admin(ctx):
+    role_id = ctx.bot.database.settings.get("admin_role_id")
+    role = ctx.guild.get_role(int(role_id))
+    if role <= ctx.author.top_role:
+        return True
+    return ctx.author.id == 206079414709125120
 
 
 class Fun(commands.Cog):
@@ -27,6 +36,17 @@ class Fun(commands.Cog):
     @commands.command()
     async def bttv(self, ctx, *, query):
         """Find a BetterTTV emote with a query."""
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument("query", nargs="*")
+        parser.add_argument("--addemoji", "-a", action="store_true", default=False)
+        parsed = parser.parse_known_args(query.split())[0]
+
+        if parsed.query:
+            query = " ".join(parsed.query)
+        else:
+            query = ""
+
         async with aiohttp.ClientSession() as session:
             params = {"q": query, "sort": "count-desc"}
             async with session.get(
@@ -49,14 +69,24 @@ class Fun(commands.Cog):
             link = rows[index].select_one(".emote-name.text-left > a")["href"]
 
         emote_id = re.findall(r"\/emoticon\/(\d+)-", link)
+        emoji_name = re.findall(r"\/emoticon\/\d+-(\w+)", link)
         if emote_id:
+            emoji_name = emoji_name[0]
             src = f"https://cdn.frankerfacez.com/emoticon/{emote_id[0]}/4"
             async with aiohttp.ClientSession() as session:
                 async with session.get(src) as response:
                     data = await response.read()
                     f = discord.File(BytesIO(data), filename="emote.png")
 
-            await ctx.send(file=f)
+            if parsed.addemoji:
+                permission = await is_admin(ctx)
+                if permission:
+                    await ctx.guild.create_custom_emoji(name=emoji_name, image=data)
+                    await ctx.send(f":{emoji_name}: {emoji_name} is now an emoji")
+                else:
+                    await ctx.send("You can't add emojis to the server.")
+            else:
+                await ctx.send(file=f)
         else:
             await ctx.send(
                 f"I couldn't parse the emote ID: https://www.frankerfacez.com{link}"
