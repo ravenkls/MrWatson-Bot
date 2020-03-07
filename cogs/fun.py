@@ -82,7 +82,7 @@ class Fun(commands.Cog):
                 permission = await is_admin(ctx)
                 if permission:
                     await ctx.guild.create_custom_emoji(name=emoji_name, image=data)
-                    await ctx.send(f":{emoji_name}: {emoji_name} is now an emoji")
+                    await ctx.send(f"{emoji_name} is now an emoji")
                 else:
                     await ctx.send("You can't add emojis to the server.")
             else:
