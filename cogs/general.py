@@ -369,6 +369,43 @@ class General(commands.Cog):
             )
             await ctx.send(embed=embed)
 
+    @commands.command(aliases=["covid19", "pandemic", "virus", "coronavirus"])
+    async def corona(self, ctx, *, country="UK"):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                "https://www.worldometers.info/coronavirus/#countries"
+            ) as response:
+                html = await response.text()
+                soup = BeautifulSoup(html, "html.parser")
+                rows = soup.select_one("tbody").find_all("tr")
+                country_row = [
+                    r for r in rows if r.select_one("td").text.strip() == country
+                ]
+
+        if country_row:
+            (
+                country,
+                cases,
+                new_cases,
+                deaths,
+                new_deaths,
+                active_cases,
+                recovered,
+                serious_critical,
+            ) = [i.text.strip() for i in country_row[0].find_all("td")]
+
+            embed = discord.Embed(
+                colour=EMBED_ACCENT_COLOUR,
+                title=f"Coronavirus Update ({country})",
+                description=f"There have been `{new_cases}` today and there are now `{active_cases}` active cases of COVID-19.",
+            )
+            embed.add_field(name="Total cases of COVID-19", value=cases)
+            embed.add_field(name="Total deaths due to COVID-19", value=deaths)
+            embed.add_field(name="Total recovered", value=recovered)
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("I couldn't find a country with that name.")
+
     @commands.command()
     async def weather(self, ctx, *, location):
         pass
