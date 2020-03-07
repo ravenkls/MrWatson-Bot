@@ -48,7 +48,7 @@ class Fun(commands.Cog):
             query = ""
 
         async with aiohttp.ClientSession() as session:
-            params = {"q": query, "sort": "count-desc"}
+            params = {"q": query, "sort": "count-desc", "high_dpi": "on"}
             async with session.get(
                 "https://www.frankerfacez.com/emoticons/", params=params
             ) as response:
