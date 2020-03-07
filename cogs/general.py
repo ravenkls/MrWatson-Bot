@@ -382,7 +382,9 @@ class General(commands.Cog):
                 soup = BeautifulSoup(html, "html.parser")
                 rows = soup.select_one("tbody").find_all("tr")
                 country_row = [
-                    r for r in rows if r.select_one("td").text.strip() == country
+                    r
+                    for r in rows
+                    if r.select_one("td").text.strip().lower() == country.lower()
                 ]
 
         if country_row:
@@ -396,6 +398,17 @@ class General(commands.Cog):
                 recovered,
                 serious_critical,
             ) = [i.text.strip() for i in country_row[0].find_all("td")]
+
+            if not new_cases:
+                new_cases = "0"
+            if not active_cases:
+                new_cases = "0"
+            if not cases:
+                cases = "0"
+            if not deaths:
+                deaths = "0"
+            if not recovered:
+                recovered = "0"
 
             embed = discord.Embed(
                 colour=EMBED_ACCENT_COLOUR,
