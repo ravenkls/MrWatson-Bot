@@ -49,7 +49,7 @@ class Fun(commands.Cog):
 
         emote_id = re.find_all(r"\/emoticon\/(\d+)-", link)
         if emote_id:
-            src = f"https://cdn.frankerfacez.com/emoticon/{emote_id}/4"
+            src = f"https://cdn.frankerfacez.com/emoticon/{emote_id[0]}/4"
             async with aiohttp.ClientSession() as session:
                 async with session.get(src) as response:
                     data = await response.read()
