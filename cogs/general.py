@@ -371,6 +371,9 @@ class General(commands.Cog):
 
     @commands.command(aliases=["covid19", "pandemic", "virus", "coronavirus"])
     async def corona(self, ctx, *, country="UK"):
+
+        await ctx.trigger_typing()
+
         async with aiohttp.ClientSession() as session:
             async with session.get(
                 "https://www.worldometers.info/coronavirus/#countries"
@@ -402,6 +405,9 @@ class General(commands.Cog):
             embed.add_field(name="Total cases of COVID-19", value=cases)
             embed.add_field(name="Total deaths due to COVID-19", value=deaths)
             embed.add_field(name="Total recovered", value=recovered)
+            embed.set_thumbnail(
+                url="https://media.npr.org/assets/img/2020/02/11/sciencesource_ss22502136_wide-4db0dc0052033a7ceb7b5a2a224144272874adbb-s800-c85.jpg"
+            )
             await ctx.send(embed=embed)
         else:
             await ctx.send("I couldn't find a country with that name.")
