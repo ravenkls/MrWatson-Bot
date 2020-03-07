@@ -47,7 +47,7 @@ class Fun(commands.Cog):
         else:
             link = rows[index].select_one(".emote-name.text-left > a")["href"]
 
-        emote_id = re.find_all(r"\/emoticon\/(\d+)-", link)
+        emote_id = re.findall(r"\/emoticon\/(\d+)-", link)
         if emote_id:
             src = f"https://cdn.frankerfacez.com/emoticon/{emote_id[0]}/4"
             async with aiohttp.ClientSession() as session:
