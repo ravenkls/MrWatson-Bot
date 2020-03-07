@@ -413,7 +413,7 @@ class General(commands.Cog):
             embed = discord.Embed(
                 colour=EMBED_ACCENT_COLOUR,
                 title=f"Coronavirus Update ({country})",
-                description=f"There have been `{new_cases}` today and there are now `{active_cases}` active cases of COVID-19.",
+                description=f"There have been `{new_cases}` new cases today and there are now `{active_cases}` active cases of COVID-19.",
             )
             embed.add_field(name="Total cases of COVID-19", value=cases)
             embed.add_field(name="Total deaths due to COVID-19", value=deaths)
