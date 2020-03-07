@@ -44,14 +44,21 @@ class Fun(commands.Cog):
         except ValueError:
             return await ctx.send("I could not find any emote with that query.")
         else:
-            src = rows[index].select_one(".emoticon.light > img")["src"]
+            link = rows[index].select_one(".emote-name.text-left > a")["href"]
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(src) as response:
-                data = await response.read()
-                f = discord.File(BytesIO(data), filename="emote.png")
+        emote_id = re.find_all(r"\/emoticon\/(\d+)-", link)
+        if emote_id:
+            src = f"https://cdn.frankerfacez.com/emoticon/{emote_id}/4"
+            async with aiohttp.ClientSession() as session:
+                async with session.get(src) as response:
+                    data = await response.read()
+                    f = discord.File(BytesIO(data), filename="emote.png")
 
-        await ctx.send(file=f)
+            await ctx.send(file=f)
+        else:
+            await ctx.send(
+                f"I couldn't parse the emote ID: https://www.frankerfacez.com{link}"
+            )
 
 
 def setup(bot):
