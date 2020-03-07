@@ -381,11 +381,15 @@ class General(commands.Cog):
                 html = await response.text()
                 soup = BeautifulSoup(html, "html.parser")
                 rows = soup.select_one("tbody").find_all("tr")
+
                 country_row = [
                     r
                     for r in rows
                     if r.select_one("td").text.strip().lower() == country.lower()
                 ]
+
+                if country.lower() in ["all", "world", "total"]:
+                    country_row = [soup.select_one(".total_row")]
 
         if country_row:
             (
@@ -409,6 +413,8 @@ class General(commands.Cog):
                 deaths = "0"
             if not recovered:
                 recovered = "0"
+            if country == "Total:":
+                country = "Worldwide"
 
             embed = discord.Embed(
                 colour=EMBED_ACCENT_COLOUR,

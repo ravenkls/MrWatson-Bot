@@ -42,7 +42,7 @@ class Helpers(commands.Cog):
         rep_count = await self.bot.database.get_reps(member)
         await ctx.send(f"{member.name} has `{rep_count}` reputation points.")
 
-    @commands.command()
+    @commands.command(aliases=["lb"])
     async def leaderboard(self, ctx):
         """View the reputation points leaderboard."""
         leaderboard = await self.bot.database.get_top_reps()
