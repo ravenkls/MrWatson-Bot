@@ -272,9 +272,9 @@ class Moderation(commands.Cog):
         reason, total_time, expiry_time = self.parse_reason_with_time_flags(reason)
 
         await ctx.guild.ban(member, reason=f"Banned by {ctx.author}. Reason: {reason}")
-        await self.send_punishment_message(ctx, expiry_time, "banned", reason)
+        await self.send_punishment_message(ctx, member, expiry_time, "banned", reason)
 
-    async def send_punishment_message(self, ctx, expiry_time, p_type, reason):
+    async def send_punishment_message(self, ctx, member, expiry_time, p_type, reason):
         """Send the appropriate message for the punishment depending on 
         whether it is timed or permanent."""
         e = "🔨" if p_type == "banned" else "🙊"
@@ -386,8 +386,7 @@ class Moderation(commands.Cog):
         guild = self.bot.get_guild(int(mute_role_guild))
         role = guild.get_role(int(self.bot.database.settings.get("mute_role_id")))
         await member.add_roles(role, reason=f"Muted by {ctx.author}. Reason: {reason}")
-        await self.send_punishment_message(ctx, expiry_time, "muted", reason)
-        await self.log(embed)
+        await self.send_punishment_message(ctx, member, expiry_time, "muted", reason)
 
     @commands.command()
     @commands.guild_only()
