@@ -45,35 +45,29 @@ class Moderation(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     async def adminrole(self, ctx, *, role: discord.Role = None):
-        if role is None:
-            role_id = ctx.bot.database.settings.get("admin_role_id")
-            role = ctx.guild.get_role(int(role_id))
-            if role:
-                await ctx.send(f"{role} is the admin role.")
-            else:
-                await ctx.send("The admin role is not set.")
-        else:
-            await self.bot.database.set_setting(
-                "admin_role_guild_id", str(ctx.guild.id)
-            )
-            await self.bot.database.set_setting("admin_role_id", str(role.id))
-            await ctx.send(f"✅ {role.mention} is now set as the admin role.")
+        await self.setrole(ctx, role, "admin_role")
 
     @commands.command()
     @commands.check(is_admin)
     @commands.guild_only()
     async def modrole(self, ctx, *, role: discord.Role = None):
+        await self.setrole(ctx, role, "mod_role")
+
+    async def setrole(self, ctx, role, name):
+        """Set the role in the config."""
         if role is None:
-            role_id = ctx.bot.database.settings.get("mod_role_id")
+            role_id = ctx.bot.database.settings.get(name + "_id")
             role = ctx.guild.get_role(int(role_id))
             if role:
-                await ctx.send(f"{role} is the mod role.")
+                await ctx.send(f"{role} is the {name.replace('_', ' ')}.")
             else:
-                await ctx.send("The mod role is not set.")
+                await ctx.send(f"The {name.replace('_', ' ')} is not set.")
         else:
-            await self.bot.database.set_setting("mod_role_guild_id", str(ctx.guild.id))
-            await self.bot.database.set_setting("mod_role_id", str(role.id))
-            await ctx.send(f"✅ {role.mention} is now set as the mod role.")
+            await self.bot.database.set_setting(name + "_guild_id", str(ctx.guild.id))
+            await self.bot.database.set_setting(name + "_id", str(role.id))
+            await ctx.send(
+                f"✅ {role.mention} is now set as the {name.replace('_', ' ')}."
+            )
 
     @commands.command(hidden=True)
     @commands.guild_only()
@@ -278,20 +272,28 @@ class Moderation(commands.Cog):
         reason, total_time, expiry_time = self.parse_reason_with_time_flags(reason)
 
         await ctx.guild.ban(member, reason=f"Banned by {ctx.author}. Reason: {reason}")
+        await self.send_punishment_message(ctx, expiry_time, "banned", reason)
+
+    async def send_punishment_message(self, ctx, expiry_time, p_type, reason):
+        """Send the appropriate message for the punishment depending on 
+        whether it is timed or permanent."""
+        e = "🔨" if p_type == "banned" else "🙊"
         if expiry_time >= 0:
             await self.bot.database.new_punishment(member, self.BAN, expiry_time)
             await ctx.send(
-                f"✅ {member} has been banned for {str(total_time)}. Reason: {reason}"
+                f"✅ {member} has been {p_type} for {str(total_time)}. Reason: {reason}"
             )
             embed = discord.Embed(
                 colour=EMBED_ACCENT_COLOUR,
-                description=f"🔨 {member} was banned from the server for {str(total_time)} by {ctx.author.mention}. Reason: {reason}",
+                description=f"{e} {member} was {p_type} for {str(total_time)} by {ctx.author.mention}. Reason: {reason}",
             )
         else:
-            await ctx.send(f"✅ {member} has been permanently banned. Reason: {reason}")
+            await ctx.send(
+                f"✅ {member} has been permanently {p_type}. Reason: {reason}"
+            )
             embed = discord.Embed(
                 colour=EMBED_ACCENT_COLOUR,
-                description=f"🔨 {member} was banned from the server permanently by {ctx.author.mention}. Reason: {reason}",
+                description=f"{e} {member} was {p_type} permanently by {ctx.author.mention}. Reason: {reason}",
             )
         await self.log(embed)
 
@@ -384,23 +386,7 @@ class Moderation(commands.Cog):
         guild = self.bot.get_guild(int(mute_role_guild))
         role = guild.get_role(int(self.bot.database.settings.get("mute_role_id")))
         await member.add_roles(role, reason=f"Muted by {ctx.author}. Reason: {reason}")
-        if expiry_time >= 0:
-            await self.bot.database.new_punishment(member, self.MUTE, expiry_time)
-            await ctx.send(
-                f"✅ {member.mention} has been muted for {str(total_time)}. Reason: {reason}"
-            )
-            embed = discord.Embed(
-                colour=EMBED_ACCENT_COLOUR,
-                description=f"🙊 {member.mention} was muted in all text channels for {str(total_time)} by {ctx.author.mention}. Reason: {reason}",
-            )
-        else:
-            await ctx.send(
-                f"✅ {member.mention} has been muted indefinitely. Reason: {reason}"
-            )
-            embed = discord.Embed(
-                colour=EMBED_ACCENT_COLOUR,
-                description=f"🙊 {member.mention} was muted in all text channels indefinitely by {ctx.author.mention}. Reason: {reason}",
-            )
+        await self.send_punishment_message(ctx, expiry_time, "muted", reason)
         await self.log(embed)
 
     @commands.command()
@@ -463,8 +449,6 @@ class Moderation(commands.Cog):
         for channel in ctx.guild.channels:
             if isinstance(channel, discord.TextChannel):
                 await channel.set_permissions(role, overwrite=text_overwrite)
-            # elif isinstance(channel, discord.VoiceChannel):
-            #     await channel.set_permissions(role, overwrite=voice_overwrite, reason=reason)
 
         await self.bot.database.set_setting("guild_mute_role_id", str(ctx.guild.id))
         await self.bot.database.set_setting("mute_role_id", str(role.id))
