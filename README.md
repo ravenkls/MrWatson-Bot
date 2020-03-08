@@ -5,7 +5,6 @@
         <img src="https://img.shields.io/badge/python-3.8.1-brightgreen.svg" alt="python 3.8.1" />
         <img src="https://scrutinizer-ci.com/g/ravenkls/MrWatson-Bot/badges/quality-score.png?b=master" alt="scrutinizer score" />
         <img src="https://img.shields.io/github/pipenv/locked/dependency-version/ravenkls/MrWatson-Bot/discord-py" alt="discordpy" />
-        
     </p>
 </div>
 
