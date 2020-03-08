@@ -398,8 +398,8 @@ class General(commands.Cog):
                 new_cases,
                 deaths,
                 new_deaths,
-                active_cases,
                 recovered,
+                active_cases,
                 serious_critical,
                 permillion,
             ) = [i.text.strip() for i in country_row[0].find_all("td")]
