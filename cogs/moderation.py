@@ -282,8 +282,9 @@ class Moderation(commands.Cog):
         """Send the appropriate message for the punishment depending on 
         whether it is timed or permanent."""
         e = "🔨" if p_type == "banned" else "🙊"
+        t = self.BAN if p_type == "banned" else self.MUTE
         if expiry_time >= 0:
-            await self.bot.database.new_punishment(member, self.BAN, expiry_time)
+            await self.bot.database.new_punishment(member, t, expiry_time)
             await ctx.send(
                 f"✅ {member} has been {p_type} for {str(total_time)}. Reason: {reason}"
             )
