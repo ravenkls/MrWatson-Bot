@@ -374,24 +374,51 @@ class General(commands.Cog):
 
         await ctx.trigger_typing()
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                "https://www.worldometers.info/coronavirus/#countries"
-            ) as response:
-                html = await response.text()
-                soup = BeautifulSoup(html, "html.parser")
-                rows = soup.select_one("tbody").find_all("tr")
+        if country != "UK":
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    "https://www.worldometers.info/coronavirus/#countries"
+                ) as response:
+                    html = await response.text()
+                    soup = BeautifulSoup(html, "html.parser")
+                    rows = soup.select_one("tbody").find_all("tr")
 
-                country_row = [
-                    r
-                    for r in rows
-                    if r.select_one("td").text.strip().lower() == country.lower()
-                ]
+                    country_row = [
+                        r
+                        for r in rows
+                        if r.select_one("td").text.strip().lower() == country.lower()
+                    ]
 
-                if country.lower() in ["all", "world", "total"]:
-                    country_row = [soup.select_one(".total_row")]
+                    if country.lower() in ["all", "world", "total"]:
+                        country_row = [soup.select_one(".total_row")]
 
-        if country == "UK":
+            if country_row:
+                (
+                    country,
+                    cases,
+                    new_cases,
+                    deaths,
+                    new_deaths,
+                    recovered,
+                    active_cases,
+                    serious_critical,
+                    permillion,
+                ) = [i.text.strip() for i in country_row[0].find_all("td")]
+
+                if not new_cases:
+                    new_cases = "0"
+                if not active_cases:
+                    new_cases = "0"
+                if not cases:
+                    cases = "0"
+                if not deaths:
+                    deaths = "0"
+                if not recovered:
+                    recovered = "0"
+                if country == "Total:":
+                    country = "Worldwide"
+
+        else:
             with aiohttp.ClientSession() as session:
                 async with session.get(
                     "https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public"
@@ -406,65 +433,40 @@ class General(commands.Cog):
                     }
                     risk_level = soup.find("h2", {"id": "risk-level"}).find_next("a")
 
-        if country_row:
-            (
-                country,
-                cases,
-                new_cases,
-                deaths,
-                new_deaths,
-                recovered,
-                active_cases,
-                serious_critical,
-                permillion,
-            ) = [i.text.strip() for i in country_row[0].find_all("td")]
-
-            if not new_cases:
-                new_cases = "0"
-            if not active_cases:
-                new_cases = "0"
-            if not cases:
-                cases = "0"
-            if not deaths:
-                deaths = "0"
-            if not recovered:
-                recovered = "0"
-            if country == "Total:":
-                country = "Worldwide"
-
-            if country != "UK":
-                embed = discord.Embed(
-                    colour=EMBED_ACCENT_COLOUR,
-                    title=f"Coronavirus Update ({country})",
-                    description=f"There have been `{new_cases}` new cases today and there are now `{active_cases}` active cases of COVID-19.",
-                )
-                embed.add_field(name="Total cases of COVID-19", value=cases)
-                embed.add_field(name="Total deaths due to COVID-19", value=deaths)
-                embed.add_field(name="Total recovered", value=recovered)
-            else:
-                embed = discord.Embed(
-                    colour=0x1D70B8,
-                    title="Coronavirus Update (UK)",
-                    description=summary.text,
-                )
-                embed.add_field(
-                    name="Regional Breakdown",
-                    value="\n".join([f"{loc}: `{n}`" for loc, n in regions.items()]),
-                    inline=False,
-                )
-                embed.add_field(
-                    name="Risk Level",
-                    value=f"[{risk_level.text}]({risk_level['href']})",
-                )
-                embed.set_thumbnail(url="https://i.imgur.com/nMDujhO.png")
-                embed.set_author(
-                    name="GOV.UK",
-                    url="https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public",
-                    icon_url="https://i.imgur.com/nMDujhO.png",
-                )
+        if country != "UK":
+            embed = discord.Embed(
+                colour=EMBED_ACCENT_COLOUR,
+                title=f"Coronavirus Update ({country})",
+                description=f"There have been `{new_cases}` new cases today and there are now `{active_cases}` active cases of COVID-19.",
+            )
+            embed.add_field(name="Total cases of COVID-19", value=cases)
+            embed.add_field(name="Total deaths due to COVID-19", value=deaths)
+            embed.add_field(name="Total recovered", value=recovered)
+        elif country_row:
+            embed = discord.Embed(
+                colour=0x1D70B8,
+                title="Coronavirus Update (UK)",
+                description=summary.text,
+            )
+            embed.add_field(
+                name="Regional Breakdown",
+                value="\n".join([f"{loc}: `{n}`" for loc, n in regions.items()]),
+                inline=False,
+            )
+            embed.add_field(
+                name="Risk Level", value=f"[{risk_level.text}]({risk_level['href']})",
+            )
+            embed.set_thumbnail(url="https://i.imgur.com/nMDujhO.png")
+            embed.set_author(
+                name="GOV.UK",
+                url="https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public",
+                icon_url="https://i.imgur.com/nMDujhO.png",
+            )
             await ctx.send(embed=embed)
         else:
-            await ctx.send("I couldn't find a country with that name.")
+            await ctx.send(
+                "That country doesn't exist or there is no data available for that country."
+            )
 
     @commands.command()
     async def weather(self, ctx, *, location):
