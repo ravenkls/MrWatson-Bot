@@ -445,6 +445,7 @@ class General(commands.Cog):
             embed.add_field(name="Total cases of COVID-19", value=cases)
             embed.add_field(name="Total deaths due to COVID-19", value=deaths)
             embed.add_field(name="Total recovered", value=recovered)
+            await ctx.send(embed=embed)
         elif country == "uk":
             embed = discord.Embed(
                 colour=0x1D70B8,
