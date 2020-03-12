@@ -377,7 +377,7 @@ class General(commands.Cog):
         country_row = None
         country = country.lower()
 
-        if country != "UK":
+        if country != "uk":
             async with aiohttp.ClientSession() as session:
                 async with session.get(
                     "https://www.worldometers.info/coronavirus/#countries"
@@ -436,7 +436,7 @@ class General(commands.Cog):
                     }
                     risk_level = soup.find("h2", {"id": "risk-level"}).find_next("a")
 
-        if country != "UK" and country_row:
+        if country != "uk" and country_row:
             embed = discord.Embed(
                 colour=EMBED_ACCENT_COLOUR,
                 title=f"Coronavirus Update ({country})",
@@ -445,7 +445,7 @@ class General(commands.Cog):
             embed.add_field(name="Total cases of COVID-19", value=cases)
             embed.add_field(name="Total deaths due to COVID-19", value=deaths)
             embed.add_field(name="Total recovered", value=recovered)
-        elif country == "UK":
+        elif country == "uk":
             embed = discord.Embed(
                 colour=0x1D70B8,
                 title="Coronavirus Update (UK)",
@@ -466,7 +466,7 @@ class General(commands.Cog):
                 icon_url="https://i.imgur.com/nMDujhO.png",
             )
             await ctx.send(embed=embed)
-        elif country != "UK" and not country_row:
+        elif country != "uk" and not country_row:
             await ctx.send(
                 "That country doesn't exist or there is no data available for that country."
             )
