@@ -419,7 +419,7 @@ class General(commands.Cog):
                     country = "Worldwide"
 
         else:
-            with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession() as session:
                 async with session.get(
                     "https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public"
                 ) as response:
