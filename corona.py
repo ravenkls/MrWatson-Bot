@@ -5,21 +5,16 @@ from bs4 import BeautifulSoup
 country = "UK"
 
 
-cases_page = requests.get("https://www.worldometers.info/coronavirus/#countries")
+cases_page = requests.get(
+    "https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public"
+)
 soup = BeautifulSoup(cases_page.text, "html.parser")
-rows = soup.select_one("tbody").find_all("tr")
-country_row = [r for r in rows if r.select_one("td").text.strip() == country]
+summary = soup.find("h2", {"id": "number-of-cases"}).find_next("p")
+table_cells = summary.find_next("tbody").find_all("td")
+regions = {loc.text: n.text for loc, n in zip(table_cells[0::2], table_cells[1::2])}
 
-if country_row:
-    (
-        country,
-        cases,
-        new_cases,
-        deaths,
-        new_deaths,
-        active_cases,
-        recovered,
-        serious_critical,
-    ) = [i.text.strip() for i in country_row[0].find_all("td")]
+risk_level = soup.find("h2", {"id": "risk-level"}).find_next("a")
+print(risk_level)
 
-    print(country, cases, new_cases, deaths)
+
+# print(summary.text, regions)

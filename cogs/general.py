@@ -391,6 +391,21 @@ class General(commands.Cog):
                 if country.lower() in ["all", "world", "total"]:
                     country_row = [soup.select_one(".total_row")]
 
+        if country == "UK":
+            with aiohttp.ClientSession() as session:
+                async with session.get(
+                    "https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public"
+                ) as response:
+                    html = await response.text()
+                    soup = BeautifulSoup(html, "html.parser")
+                    summary = soup.find("h2", {"id": "number-of-cases"}).find_next("p")
+                    table_cells = summary.find_next("tbody").find_all("td")
+                    regions = {
+                        loc.text: n.text
+                        for loc, n in zip(table_cells[0::2], table_cells[1::2])
+                    }
+                    risk_level = soup.find("h2", {"id": "risk-level"}).find_next("a")
+
         if country_row:
             (
                 country,
@@ -417,14 +432,36 @@ class General(commands.Cog):
             if country == "Total:":
                 country = "Worldwide"
 
-            embed = discord.Embed(
-                colour=EMBED_ACCENT_COLOUR,
-                title=f"Coronavirus Update ({country})",
-                description=f"There have been `{new_cases}` new cases today and there are now `{active_cases}` active cases of COVID-19.",
-            )
-            embed.add_field(name="Total cases of COVID-19", value=cases)
-            embed.add_field(name="Total deaths due to COVID-19", value=deaths)
-            embed.add_field(name="Total recovered", value=recovered)
+            if country != "UK":
+                embed = discord.Embed(
+                    colour=EMBED_ACCENT_COLOUR,
+                    title=f"Coronavirus Update ({country})",
+                    description=f"There have been `{new_cases}` new cases today and there are now `{active_cases}` active cases of COVID-19.",
+                )
+                embed.add_field(name="Total cases of COVID-19", value=cases)
+                embed.add_field(name="Total deaths due to COVID-19", value=deaths)
+                embed.add_field(name="Total recovered", value=recovered)
+            else:
+                embed = discord.Embed(
+                    colour=0x1D70B8,
+                    title="Coronavirus Update (UK)",
+                    description=summary.text,
+                )
+                embed.add_field(
+                    name="Regional Breakdown",
+                    value="\n".join([f"{loc}: `{n}`" for loc, n in regions.items()]),
+                    inline=False,
+                )
+                embed.add_field(
+                    name="Risk Level",
+                    value=f"[{risk_level.text}]({risk_level['href']})",
+                )
+                embed.set_thumbnail(url="https://i.imgur.com/nMDujhO.png")
+                embed.set_author(
+                    name="GOV.UK",
+                    url="https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public",
+                    icon_url="https://i.imgur.com/nMDujhO.png",
+                )
             await ctx.send(embed=embed)
         else:
             await ctx.send("I couldn't find a country with that name.")
