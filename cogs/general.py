@@ -434,7 +434,9 @@ class General(commands.Cog):
                         loc.text: n.text
                         for loc, n in zip(table_cells[0::2], table_cells[1::2])
                     }
-                    risk_level = soup.find("h2", {"id": "risk-level"}).find_next("a")
+                    risk_level = (
+                        soup.find("h2", {"id": "risk-level"}).find_next("p").text
+                    )
 
         if country != "uk" and country_row:
             embed = discord.Embed(
@@ -458,7 +460,7 @@ class General(commands.Cog):
                 inline=False,
             )
             embed.add_field(
-                name="Risk Level", value=f"[{risk_level.text}]({risk_level['href']})",
+                name="Risk Level", value=risk_level,
             )
             embed.set_thumbnail(url="https://i.imgur.com/nMDujhO.png")
             embed.set_author(
