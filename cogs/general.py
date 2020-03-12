@@ -375,6 +375,7 @@ class General(commands.Cog):
         await ctx.trigger_typing()
 
         country_row = None
+        country = country.lower()
 
         if country != "UK":
             async with aiohttp.ClientSession() as session:
