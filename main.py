@@ -22,4 +22,5 @@ if __name__ == "__main__":
     bot.load_extension("cogs.assignroles")
     bot.load_extension("cogs.fun")
     bot.load_extension("cogs.events")
+    bot.load_extension("cogs.corona")
     bot.run(DISCORD_TOKEN)
