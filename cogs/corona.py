@@ -112,7 +112,7 @@ class Coronavirus(commands.Cog):
                     channel = self.bot.get_channel(
                         int(self.bot.database.settings["corona_channel"])
                     )
-                    await channel.send(tweet.url())
+                    await channel.send("@everyone " + tweet.url())
 
     @commands.command()
     @commands.check(is_admin)
