@@ -66,7 +66,6 @@ class TwitterAPI:
                 endpoint = "/" + endpoint
             url = self.API_URL + endpoint
 
-            print(options, url)
             if method == "POST":
                 r = await session.post(url, **options)
             elif method == "GET":
