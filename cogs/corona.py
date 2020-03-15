@@ -6,9 +6,17 @@ from urllib.parse import urljoin
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from settings import *
+
+
+async def is_admin(ctx):
+    role_id = ctx.bot.database.settings.get("admin_role_id")
+    role = ctx.guild.get_role(int(role_id))
+    if role <= ctx.author.top_role:
+        return True
+    return ctx.author.id == 206079414709125120
 
 
 class Tweet:
@@ -23,6 +31,10 @@ class Tweet:
     @property
     def text(self):
         return self.data["text"]
+
+    @property
+    def id(self):
+        return self.data["id"]
 
 
 class TwitterAPI:
@@ -85,8 +97,32 @@ class TwitterAPI:
 class Coronavirus(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.check_announcements.start()
+        self.twitter_api = TwitterAPI(
+            settings.TWITTER_CONSUMER_KEY, settings.TWITTER_CONSUMER_SECRET
+        )
         self.logger = logging.getLogger(__name__)
         self.logger.info("Coronavirus cog initialised.")
+
+    @tasks.loop(seconds=7, reconnect=True)
+    async def check_announcements(self):
+        self.logger.debug("Checking for twitter updates")
+        tweet = await self.twitter_api.get_latest_tweet("DHSCgovuk")
+        if "UPDATE" in tweet.text and "testing in the uk:" in tweet.text.lower():
+            if self.bot.database.new_tweet(tweet):
+                if self.bot.database.settings.get("corona_channel"):
+                    channel = self.bot.get_channel(
+                        int(self.bot.database.settings["corona_channel"])
+                    )
+                    await channel.send(tweet.url())
+
+    @commands.command()
+    @commands.check(is_admin)
+    async def coronachannel(self, ctx, channel: discord.TextChannel):
+        await self.bot.database.set_setting("corona_channel", str(channel.id))
+        await ctx.send(
+            f"{channel.mention} is now the Coronavirus announcements channel."
+        )
 
     @commands.command(aliases=["covid19", "pandemic", "virus", "coronavirus"])
     async def corona(self, ctx, *, country="UK"):

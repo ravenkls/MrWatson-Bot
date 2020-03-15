@@ -54,6 +54,22 @@ class Database:
         await self.conn.execute(
             "CREATE TABLE IF NOT EXISTS join_roles (role_id BIGINT PRIMARY KEY);"
         )
+        await self.conn.execute(
+            "CREATE TABLE IF NOT EXISTS corona_tweets (tweet_id BIGINT PRIMARY KEY);"
+        )
+
+    def new_tweet(self, tweet):
+        """Check if a tweet has been seen before."""
+        result = await self.conn.fetchrow(
+            "SELECT * FROM corona_tweets WHERE tweet_id=$1;", tweet.id
+        )
+        if result:
+            return True
+        else:
+            await self.conn.execute(
+                "INSERT INTO corona_tweets (tweet_id) VALUES ($1);", tweet.id
+            )
+            return False
 
     async def get_tables(self):
         """Retrieve all table names."""
