@@ -98,9 +98,7 @@ class Coronavirus(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.check_announcements.start()
-        self.twitter_api = TwitterAPI(
-            settings.TWITTER_CONSUMER_KEY, settings.TWITTER_CONSUMER_SECRET
-        )
+        self.twitter_api = TwitterAPI(TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET)
         self.logger = logging.getLogger(__name__)
         self.logger.info("Coronavirus cog initialised.")
 
