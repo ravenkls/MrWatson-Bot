@@ -58,7 +58,7 @@ class Database:
             "CREATE TABLE IF NOT EXISTS corona_tweets (tweet_id BIGINT PRIMARY KEY);"
         )
 
-    def new_tweet(self, tweet):
+    async def new_tweet(self, tweet):
         """Check if a tweet has been seen before."""
         result = await self.conn.fetchrow(
             "SELECT * FROM corona_tweets WHERE tweet_id=$1;", tweet.id
