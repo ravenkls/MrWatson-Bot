@@ -109,7 +109,8 @@ class Coronavirus(commands.Cog):
         self.logger.debug("Checking for twitter updates")
         tweet = await self.twitter_api.get_latest_tweet("DHSCgovuk")
         if "UPDATE" in tweet.text and "testing in the uk:" in tweet.text.lower():
-            if self.bot.database.new_tweet(tweet):
+            exists = await self.bot.database.new_tweet(tweet)
+            if exists:
                 if self.bot.database.settings.get("corona_channel"):
                     channel = self.bot.get_channel(
                         int(self.bot.database.settings["corona_channel"])
