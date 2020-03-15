@@ -102,13 +102,13 @@ class Coronavirus(commands.Cog):
         self.logger = logging.getLogger(__name__)
         self.logger.info("Coronavirus cog initialised.")
 
-    @tasks.loop(seconds=7, reconnect=True)
+    @tasks.loop(seconds=10, reconnect=True)
     async def check_announcements(self):
         self.logger.debug("Checking for twitter updates")
         tweet = await self.twitter_api.get_latest_tweet("DHSCgovuk")
         if "UPDATE" in tweet.text and "testing in the uk:" in tweet.text.lower():
             exists = await self.bot.database.new_tweet(tweet)
-            if exists:
+            if not exists:
                 if self.bot.database.settings.get("corona_channel"):
                     channel = self.bot.get_channel(
                         int(self.bot.database.settings["corona_channel"])
