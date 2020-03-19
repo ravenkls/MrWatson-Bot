@@ -288,6 +288,9 @@ class Moderation(commands.Cog):
             await ctx.send(
                 f"✅ {member} has been {p_type} for {str(total_time)}. Reason: {reason}"
             )
+            await member.send(
+                f"You have been {p_type} for {str(total_time)}. Reason: {reason}"
+            )
             embed = discord.Embed(
                 colour=EMBED_ACCENT_COLOUR,
                 description=f"{e} {member} was {p_type} for {str(total_time)} by {ctx.author.mention}. Reason: {reason}",
@@ -296,6 +299,7 @@ class Moderation(commands.Cog):
             await ctx.send(
                 f"✅ {member} has been permanently {p_type}. Reason: {reason}"
             )
+            await member.send(f"You have been permanently {p_type}. Reason: {reason}")
             embed = discord.Embed(
                 colour=EMBED_ACCENT_COLOUR,
                 description=f"{e} {member} was {p_type} permanently by {ctx.author.mention}. Reason: {reason}",
