@@ -105,7 +105,11 @@ class Coronavirus(commands.Cog):
     async def check_announcements(self):
         self.logger.debug("Checking for twitter updates")
         tweet = await self.twitter_api.get_latest_tweet("DHSCgovuk")
-        if "UPDATE" in tweet.text and "testing in the uk:" in tweet.text.lower():
+        if (
+            "UPDATE" in tweet.text
+            and "testing in the uk:" in tweet.text.lower()
+            and "as of" in tweet.text.lower()
+        ):
             exists = await self.bot.database.new_tweet(tweet)
             if not exists:
                 if self.bot.database.settings.get("corona_channel"):
