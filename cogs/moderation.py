@@ -271,10 +271,10 @@ class Moderation(commands.Cog):
 
         reason, total_time, expiry_time = self.parse_reason_with_time_flags(reason)
 
-        await ctx.guild.ban(member, reason=f"Banned by {ctx.author}. Reason: {reason}")
         await self.send_punishment_message(
             ctx, member, expiry_time, total_time, "banned", reason
         )
+        await ctx.guild.ban(member, reason=f"Banned by {ctx.author}. Reason: {reason}")
 
     async def send_punishment_message(
         self, ctx, member, expiry_time, total_time, p_type, reason
