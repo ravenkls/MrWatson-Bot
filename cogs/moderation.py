@@ -69,25 +69,42 @@ class Moderation(commands.Cog):
                 f"✅ {role.mention} is now set as the {name.replace('_', ' ')}."
             )
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    async def googleit(self, ctx, member: discord.Member):
-        """Run this command and chaos will ensue."""
-        embed = discord.Embed(
-            colour=EMBED_ACCENT_COLOUR,
-            description=f"😱 {ctx.author.mention} ran the -googleit command on {member.mention}",
-        )
-        await self.log(embed)
-        messages = []
-        for channel in ctx.guild.channels:
-            if isinstance(channel, discord.TextChannel):
-                msg = await channel.send(member.mention)
-                messages.append(msg)
+    async def shiftmemberroles(self, ctx, old: discord.Role, new: discord.Role):
+        """Moves all members in a role to another."""
+        msg = await ctx.send("(0%) Shifting member roles...")
+        total = len(old.members)
+        percent = 0
+        for n, member in enumerate(old.members):
+            await member.add_roles(new)
+            await member.remove_roles(old)
+            p = int((n / total) * 10) * 10
+            if p != percent:
+                percent = p
+                await msg.edit(content=f"({percent}%) Shifting member roles...")
+        await msg.edit(content=f"(100%) Member roles were shifted")
 
-        await asyncio.sleep(5)
-        for m in messages:
-            await m.delete()
+    # @commands.command(hidden=True)
+    # @commands.guild_only()
+    # @commands.is_owner()
+    # async def googleit(self, ctx, member: discord.Member):
+    #     """Run this command and chaos will ensue."""
+    #     embed = discord.Embed(
+    #         colour=EMBED_ACCENT_COLOUR,
+    #         description=f"😱 {ctx.author.mention} ran the -googleit command on {member.mention}",
+    #     )
+    #     await self.log(embed)
+    #     messages = []
+    #     for channel in ctx.guild.channels:
+    #         if isinstance(channel, discord.TextChannel):
+    #             msg = await channel.send(member.mention)
+    #             messages.append(msg)
+
+    #     await asyncio.sleep(5)
+    #     for m in messages:
+    #         await m.delete()
 
     @commands.command()
     @commands.guild_only()
