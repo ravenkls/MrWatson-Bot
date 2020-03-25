@@ -541,9 +541,10 @@ class General(commands.Cog):
         if error_embed.description is not None:
             return await ctx.send(embed=error_embed)
 
-    @commands.command()
+    @commands.command(aliases=["graph"])
     @commands.guild_only()
     async def demographics(self, ctx):
+        """Display the server's role distribution."""
         await ctx.trigger_typing()
 
         role_ids = await self.bot.database.get_demographic_roles()
