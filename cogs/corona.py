@@ -164,6 +164,7 @@ class Coronavirus(commands.Cog):
                     serious_critical,
                     permillion,
                     deathmillion,
+                    first_case_date,
                 ) = [i.text.strip() for i in country_row[0].find_all("td")]
 
                 if not new_cases:
