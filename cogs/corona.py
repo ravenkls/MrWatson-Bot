@@ -1,16 +1,16 @@
 import asyncio
 import base64
+import datetime
 import logging
-from urllib.parse import urljoin
+from functools import lru_cache
 from io import BytesIO
-import base64
+from urllib.parse import urljoin
 
-import matplotlib.pyplot as plt
 import aiohttp
 import discord
+import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 from discord.ext import commands, tasks
-import datetime
 
 from settings import *
 
@@ -218,6 +218,7 @@ class Coronavirus(commands.Cog):
                 embed.set_footer(text="Data sourced from Worldometers and GOV.UK")
 
                 graph = await self.get_uk_corona_graph()
+                graph_image_data = base64.b64encode(graph.getvalue()).decode()
                 url = await self.upload_image(graph)
                 embed.set_image(url=url)
 
@@ -331,10 +332,11 @@ class Coronavirus(commands.Cog):
 
             return image
 
-    async def upload_image(self, file: BytesIO):
+    @lru_cache(maxsize=5)
+    async def upload_image(self, file_data):
         async with aiohttp.ClientSession() as session:
             headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
-            data = {"image": base64.b64encode(file.getvalue()).decode()}
+            data = {"image": file_data}
             response = await session.post(
                 "https://api.imgur.com/3/image", headers=headers, data=data
             )
