@@ -202,6 +202,7 @@ class Coronavirus(commands.Cog):
             embed.add_field(name="Cases Today", value=new_cases)
             embed.add_field(name="Deaths Today", value=new_deaths)
             embed.add_field(name="Critical", value=serious_critical)
+            embed.add_field(name="Active", value=active_cases)
             embed.add_field(name="Cases per Million", value=permillion)
             embed.add_field(name="Deaths per Million", value=deathmillion)
 
