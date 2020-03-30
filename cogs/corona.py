@@ -182,14 +182,28 @@ class Coronavirus(commands.Cog):
             if country == "Total:":
                 country = "Worldwide"
 
+            percent_deaths = round(
+                (int(deaths.replace(",", "")) / int(cases.replace(",", ""))) * 100, 2
+            )
+            percent_recovered = round(
+                (int(recovered.replace(",", "")) / int(cases.replace(",", ""))) * 100, 2
+            )
+
             embed = discord.Embed(
                 colour=EMBED_ACCENT_COLOUR,
                 title=f"Coronavirus Update ({country})",
                 description=f"There have been `{new_cases}` new cases today and there are now `{active_cases}` active cases of COVID-19.",
             )
-            embed.add_field(name="Total cases of COVID-19", value=cases)
-            embed.add_field(name="Total deaths due to COVID-19", value=deaths)
-            embed.add_field(name="Total recovered", value=recovered)
+            embed.add_field(name="Total Cases", value=cases)
+            embed.add_field(name="Total Deaths", value=f"{deaths} ({percent_deaths}%)")
+            embed.add_field(
+                name="Total Recovered", value=f"{recovered} ({percent_recovered}%)"
+            )
+            embed.add_field(name="Cases Today", value=new_cases)
+            embed.add_field(name="Deaths Today", value=new_deaths)
+            embed.add_field(name="Critical", value=serious_critical)
+            embed.add_field(name="Cases per Million", value=permillion)
+            embed.add_field(name="Deaths per Million", value=deathmillion)
 
             if country == "UK":
                 embed.colour = 0x1D70B8
@@ -299,6 +313,7 @@ class Coronavirus(commands.Cog):
             ax.spines["right"].set_visible(False)
             ax.yaxis.set_ticks_position("left")
             ax.xaxis.set_ticks_position("bottom")
+            ax.legend()
 
             fig.autofmt_xdate()
             fig.tight_layout()
