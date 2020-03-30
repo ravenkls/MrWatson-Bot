@@ -228,7 +228,7 @@ class Coronavirus(commands.Cog):
                 "https://services1.arcgis.com/0IrmI40n5ZYxTUrV/arcgis/rest/services/DailyConfirmedCases/FeatureServer/0/query",
                 params=params,
             ) as r:
-                data = await r.json()
+                data = await r.json(content_type="text/plain")
 
             x = [
                 datetime.date.fromtimestamp(f["attributes"]["DateVal"] / 1000)
