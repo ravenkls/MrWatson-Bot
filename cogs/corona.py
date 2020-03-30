@@ -213,12 +213,14 @@ class Coronavirus(commands.Cog):
                     url="https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public",
                     icon_url="https://i.imgur.com/nMDujhO.png",
                 )
+                embed.set_footer(text="Data sourced from Worldometers and GOV.UK")
 
                 graph = await self.get_uk_corona_graph()
                 await ctx.send(
                     embed=embed, file=discord.File(graph, filename="corona_uk.png")
                 )
             else:
+                embed.set_footer(text="Data sourced from Worldometers")
                 await ctx.send(embed=embed)
         else:
             await ctx.send(
