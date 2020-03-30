@@ -576,6 +576,13 @@ class General(commands.Cog):
         ax.set_xticks(x_pos)
         ax.set_xticklabels(x, rotation=45)
 
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.yaxis.set_ticks_position("left")
+        ax.xaxis.set_ticks_position("bottom")
+
+        fig.tight_layout()
+
         image = BytesIO()
         fig.savefig(image, format="png", transparent=True)
         image.seek(0)
