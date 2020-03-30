@@ -2,7 +2,9 @@ import asyncio
 import base64
 import logging
 from urllib.parse import urljoin
+from io import BytesIO
 
+import matplotlib.pyplot as plt
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
@@ -134,70 +136,51 @@ class Coronavirus(commands.Cog):
         country_row = None
         country = country.lower()
 
-        if country != "kekw":
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    "https://www.worldometers.info/coronavirus/#countries"
-                ) as response:
-                    html = await response.text()
-                    soup = BeautifulSoup(html, "html.parser")
-                    rows = soup.select_one("tbody").find_all("tr")
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                "https://www.worldometers.info/coronavirus/#countries"
+            ) as response:
+                html = await response.text()
+                soup = BeautifulSoup(html, "html.parser")
+                rows = soup.select_one("tbody").find_all("tr")
 
-                    country_row = [
-                        r
-                        for r in rows
-                        if r.select_one("td").text.strip().lower() == country.lower()
-                    ]
+                country_row = [
+                    r
+                    for r in rows
+                    if r.select_one("td").text.strip().lower() == country.lower()
+                ]
 
-                    if country.lower() in ["all", "world", "total"]:
-                        country_row = [soup.select_one(".total_row")]
+                if country.lower() in ["all", "world", "total"]:
+                    country_row = [soup.select_one(".total_row")]
 
-            if country_row:
-                (
-                    country,
-                    cases,
-                    new_cases,
-                    deaths,
-                    new_deaths,
-                    recovered,
-                    active_cases,
-                    serious_critical,
-                    permillion,
-                    deathmillion,
-                    first_case_date,
-                ) = [i.text.strip() for i in country_row[0].find_all("td")]
+        if country_row:
+            (
+                country,
+                cases,
+                new_cases,
+                deaths,
+                new_deaths,
+                recovered,
+                active_cases,
+                serious_critical,
+                permillion,
+                deathmillion,
+                first_case_date,
+            ) = [i.text.strip() for i in country_row[0].find_all("td")]
 
-                if not new_cases:
-                    new_cases = "0"
-                if not active_cases:
-                    new_cases = "0"
-                if not cases:
-                    cases = "0"
-                if not deaths:
-                    deaths = "0"
-                if not recovered:
-                    recovered = "0"
-                if country == "Total:":
-                    country = "Worldwide"
+            if not new_cases:
+                new_cases = "0"
+            if not active_cases:
+                new_cases = "0"
+            if not cases:
+                cases = "0"
+            if not deaths:
+                deaths = "0"
+            if not recovered:
+                recovered = "0"
+            if country == "Total:":
+                country = "Worldwide"
 
-        else:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    "https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public"
-                ) as response:
-                    html = await response.text()
-                    soup = BeautifulSoup(html, "html.parser")
-                    summary = soup.find("h2", {"id": "number-of-cases"}).find_next("p")
-                    table_cells = summary.find_next("tbody").find_all("td")
-                    regions = {
-                        loc.text: n.text
-                        for loc, n in zip(table_cells[0::2], table_cells[1::2])
-                    }
-                    risk_level = (
-                        soup.find("h2", {"id": "risk-level"}).find_next("p").text
-                    )
-
-        if country != "kekw" and country_row:
             embed = discord.Embed(
                 colour=EMBED_ACCENT_COLOUR,
                 title=f"Coronavirus Update ({country})",
@@ -206,32 +189,116 @@ class Coronavirus(commands.Cog):
             embed.add_field(name="Total cases of COVID-19", value=cases)
             embed.add_field(name="Total deaths due to COVID-19", value=deaths)
             embed.add_field(name="Total recovered", value=recovered)
-            await ctx.send(embed=embed)
-        elif country == "kekw":
-            embed = discord.Embed(
-                colour=0x1D70B8,
-                title="Coronavirus Update (UK)",
-                description=summary.text,
-            )
-            embed.add_field(
-                name="Regional Breakdown",
-                value="\n".join([f"{loc}: `{n}`" for loc, n in regions.items()]),
-                inline=False,
-            )
-            embed.add_field(
-                name="Risk Level", value=risk_level,
-            )
-            embed.set_thumbnail(url="https://i.imgur.com/nMDujhO.png")
-            embed.set_author(
-                name="GOV.UK",
-                url="https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public",
-                icon_url="https://i.imgur.com/nMDujhO.png",
-            )
-            await ctx.send(embed=embed)
-        elif country != "kekw" and not country_row:
+            
+            
+            if country == "UK":
+                embed.colour = 0x1D70B8
+                embed.set_thumbnail(url="https://i.imgur.com/nMDujhO.png")
+                embed.set_author(
+                    name="GOV.UK",
+                    url="https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public",
+                    icon_url="https://i.imgur.com/nMDujhO.png",
+                )
+            
+                graph = await self.get_uk_corona_graph()
+                await ctx.send(embed=embed, file=file=discord.File(graph, filename="corona_uk.png"),)
+            else:
+                await ctx.send(embed=embed)
+        else:
             await ctx.send(
                 "That country doesn't exist or there is no data available for that country."
             )
+
+    async def get_uk_corona_graph(self):
+        async with aiohttp.ClientSession() as session:
+            params = {
+                "f": "json",
+                "where": "1=1",
+                "returnGeometry": "false",
+                "spatialRel": "esriSpatialRelIntersects",
+                "outFields": "*",
+                "orderByFields": "DateVal asc",
+                "resultOffset": 0,
+                "resultRecordCount": 2000,
+                "cacheHint": "true",
+            }
+
+            async with session.get("https://services1.arcgis.com/0IrmI40n5ZYxTUrV/arcgis/rest/services/DailyConfirmedCases/FeatureServer/0/query", params=params) as r:
+                data = r.json()
+            
+            x = [
+                datetime.date.fromtimestamp(f["attributes"]["DateVal"] / 1000)
+                for f in data["features"]
+            ]
+
+            cum_cases = [
+                f["attributes"]["CumCases"] if f["attributes"]["CumCases"] else 0
+                for f in data["features"]
+            ]
+            cum_deaths = [
+                f["attributes"]["CumDeaths"] if f["attributes"]["CumDeaths"] else 0
+                for f in data["features"]
+            ]
+            daily_cases = [
+                f["attributes"]["CMODateCount"] if f["attributes"]["CMODateCount"] else 0
+                for f in data["features"]
+            ]
+            daily_deaths = [
+                f["attributes"]["DailyDeaths"] if f["attributes"]["DailyDeaths"] else 0
+                for f in data["features"]
+            ]
+
+            fig = plt.figure()
+
+            ax = fig.add_subplot(111)
+
+            ax.set_title("UK Cases and Deaths")
+
+            ax.bar(
+                x,
+                daily_cases,
+                label="Daily Cases",
+                width=0.35,
+                align="edge",
+                color="#00ad93",
+                zorder=1,
+            )
+            ax.bar(
+                x,
+                daily_deaths,
+                label="Daily Deaths",
+                width=-0.35,
+                align="edge",
+                color="#e60000",
+                zorder=1,
+            )
+
+            ax.plot(x, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2)
+            ax.plot(x, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
+            ax.scatter(x, cum_deaths, color="#e60000", s=20, zorder=3)
+            ax.scatter(x, cum_cases, color="#00ad93", s=20, zorder=3)
+            ax.text(
+                x[-1] + datetime.timedelta(days=2), cum_deaths[-1], str(cum_deaths[-1]) + " deaths"
+            )
+            ax.text(
+                x[-1] + datetime.timedelta(days=2), cum_cases[-1], str(cum_cases[-1]) + " cases"
+            )
+
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
+            ax.yaxis.set_ticks_position("left")
+            ax.xaxis.set_ticks_position("bottom")
+
+            fig.autofmt_xdate()
+            fig.tight_layout()
+
+            plt.show()
+
+            image = BytesIO()
+            fig.savefig(image, format="png", transparent=True)
+            image.seek(0)
+
+            return image
 
 
 def setup(bot):
