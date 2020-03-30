@@ -313,7 +313,7 @@ class Coronavirus(commands.Cog):
             ax.spines["right"].set_visible(False)
             ax.yaxis.set_ticks_position("left")
             ax.xaxis.set_ticks_position("bottom")
-            ax.legend()
+            legend = ax.legend(frameon=False)
 
             fig.autofmt_xdate()
             fig.tight_layout()
