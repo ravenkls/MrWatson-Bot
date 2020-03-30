@@ -189,8 +189,7 @@ class Coronavirus(commands.Cog):
             embed.add_field(name="Total cases of COVID-19", value=cases)
             embed.add_field(name="Total deaths due to COVID-19", value=deaths)
             embed.add_field(name="Total recovered", value=recovered)
-            
-            
+
             if country == "UK":
                 embed.colour = 0x1D70B8
                 embed.set_thumbnail(url="https://i.imgur.com/nMDujhO.png")
@@ -199,9 +198,11 @@ class Coronavirus(commands.Cog):
                     url="https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public",
                     icon_url="https://i.imgur.com/nMDujhO.png",
                 )
-            
+
                 graph = await self.get_uk_corona_graph()
-                await ctx.send(embed=embed, file=file=discord.File(graph, filename="corona_uk.png"),)
+                await ctx.send(
+                    embed=embed, file=discord.File(graph, filename="corona_uk.png")
+                )
             else:
                 await ctx.send(embed=embed)
         else:
@@ -223,9 +224,12 @@ class Coronavirus(commands.Cog):
                 "cacheHint": "true",
             }
 
-            async with session.get("https://services1.arcgis.com/0IrmI40n5ZYxTUrV/arcgis/rest/services/DailyConfirmedCases/FeatureServer/0/query", params=params) as r:
+            async with session.get(
+                "https://services1.arcgis.com/0IrmI40n5ZYxTUrV/arcgis/rest/services/DailyConfirmedCases/FeatureServer/0/query",
+                params=params,
+            ) as r:
                 data = r.json()
-            
+
             x = [
                 datetime.date.fromtimestamp(f["attributes"]["DateVal"] / 1000)
                 for f in data["features"]
@@ -240,7 +244,9 @@ class Coronavirus(commands.Cog):
                 for f in data["features"]
             ]
             daily_cases = [
-                f["attributes"]["CMODateCount"] if f["attributes"]["CMODateCount"] else 0
+                f["attributes"]["CMODateCount"]
+                if f["attributes"]["CMODateCount"]
+                else 0
                 for f in data["features"]
             ]
             daily_deaths = [
@@ -278,10 +284,14 @@ class Coronavirus(commands.Cog):
             ax.scatter(x, cum_deaths, color="#e60000", s=20, zorder=3)
             ax.scatter(x, cum_cases, color="#00ad93", s=20, zorder=3)
             ax.text(
-                x[-1] + datetime.timedelta(days=2), cum_deaths[-1], str(cum_deaths[-1]) + " deaths"
+                x[-1] + datetime.timedelta(days=2),
+                cum_deaths[-1],
+                str(cum_deaths[-1]) + " deaths",
             )
             ax.text(
-                x[-1] + datetime.timedelta(days=2), cum_cases[-1], str(cum_cases[-1]) + " cases"
+                x[-1] + datetime.timedelta(days=2),
+                cum_cases[-1],
+                str(cum_cases[-1]) + " cases",
             )
 
             ax.spines["top"].set_visible(False)
