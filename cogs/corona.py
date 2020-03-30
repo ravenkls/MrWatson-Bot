@@ -3,6 +3,7 @@ import base64
 import logging
 from urllib.parse import urljoin
 from io import BytesIO
+import base64
 
 import matplotlib.pyplot as plt
 import aiohttp
@@ -217,9 +218,10 @@ class Coronavirus(commands.Cog):
                 embed.set_footer(text="Data sourced from Worldometers and GOV.UK")
 
                 graph = await self.get_uk_corona_graph()
-                await ctx.send(
-                    embed=embed, file=discord.File(graph, filename="corona_uk.png")
-                )
+                url = await self.upload_image(graph)
+                embed.set_image(url=url)
+
+                await ctx.send(embed=embed)
             else:
                 embed.set_footer(text="Data sourced from Worldometers")
                 await ctx.send(embed=embed)
@@ -328,6 +330,17 @@ class Coronavirus(commands.Cog):
             image.seek(0)
 
             return image
+
+    async def upload_image(self, file: BytesIO):
+        async with aiohttp.ClientSession() as session:
+            headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
+            data = {"image": base64.b64encode(file.getvalue()).decode()}
+            response = await session.post(
+                "https://api.imgur.com/3/image", headers=headers, data=data
+            )
+            response_json = await response.json()
+            if response_json["success"]:
+                return response_json["data"]["link"]
 
 
 def setup(bot):
