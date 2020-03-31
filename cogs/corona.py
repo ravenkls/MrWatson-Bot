@@ -10,6 +10,7 @@ import discord
 import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 from discord.ext import commands, tasks
+import numpy as np
 
 from settings import *
 
@@ -214,7 +215,6 @@ class Coronavirus(commands.Cog):
             embed.add_field(name="Cases Today", value=new_cases)
             embed.add_field(name="Deaths Today", value=new_deaths)
             embed.add_field(name="Critical", value=serious_critical)
-            embed.add_field(name="Active", value=active_cases)
             embed.add_field(name="Cases per Million", value=permillion)
             embed.add_field(name="Deaths per Million", value=deathmillion)
 
@@ -228,7 +228,13 @@ class Coronavirus(commands.Cog):
                 )
                 embed.set_footer(text="Data sourced from Worldometers and GOV.UK")
 
-                graph, graph_id = await self.get_uk_corona_graph()
+                data = await self.get_uk_corona_stats()
+
+                cum_cases = data[0]
+                pred = self.next_day_prediction(cum_cases)
+                embed.add_field(name="Tomorrow's Predicted Increase", value=pred)
+
+                graph, graph_id = await self.get_uk_corona_graph(*data)
                 graph_image_data = base64.b64encode(graph.getvalue()).decode()
                 url = await self.upload_image(graph, graph_id=graph_id)
                 embed.set_image(url=url)
@@ -242,7 +248,29 @@ class Coronavirus(commands.Cog):
                 "That country doesn't exist or there is no data available for that country."
             )
 
-    async def get_uk_corona_graph(self):
+    def next_day_prediction(self, cases):
+        """Prediction is generated using linear regression."""
+        y = np.array(cases[-3:])
+        x = np.array([1, 2, 3])
+
+        x_bar = np.mean(x)
+        x2_bar = np.mean(x ** 2)
+        y_bar = np.mean(y)
+        xy_bar = np.mean(x * y)
+
+        m = (x_bar * y_bar - xy_bar) / (x_bar ** 2 - x2_bar)
+        c = y_bar - m * x_bar
+
+        pred = m * 4 + c
+
+        increase = pred - cases[-1]
+
+        if pred >= 1:
+            return "+" + str(int(pred))
+        else:
+            return str(int(pred))
+
+    async def get_uk_corona_stats(self):
         async with aiohttp.ClientSession() as session:
             params = {
                 "f": "json",
@@ -286,64 +314,70 @@ class Coronavirus(commands.Cog):
                 for f in data["features"]
             ]
 
-            fig = plt.figure()
+        return cum_cases, cum_deaths, daily_cases, daily_deaths
 
-            ax = fig.add_subplot(111)
+    async def get_uk_corona_graph(
+        self, cum_cases, cum_deaths, daily_cases, daily_deaths
+    ):
 
-            ax.set_title("UK Cases and Deaths")
+        fig = plt.figure()
 
-            ax.bar(
-                x,
-                daily_cases,
-                label="Daily Cases",
-                width=0.35,
-                align="edge",
-                color="#00ad93",
-                zorder=1,
-            )
-            ax.bar(
-                x,
-                daily_deaths,
-                label="Daily Deaths",
-                width=-0.35,
-                align="edge",
-                color="#e60000",
-                zorder=1,
-            )
+        ax = fig.add_subplot(111)
 
-            ax.plot(x, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2)
-            ax.plot(x, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
-            ax.scatter(x, cum_deaths, color="#e60000", s=20, zorder=3)
-            ax.scatter(x, cum_cases, color="#00ad93", s=20, zorder=3)
-            ax.text(
-                x[-1] + datetime.timedelta(days=2),
-                cum_deaths[-1],
-                str(cum_deaths[-1]) + " deaths",
-            )
-            ax.text(
-                x[-1] + datetime.timedelta(days=2),
-                cum_cases[-1],
-                str(cum_cases[-1]) + " cases",
-            )
+        ax.set_title("UK Cases and Deaths")
 
-            graph_id = cum_cases + cum_deaths
+        ax.bar(
+            x,
+            daily_cases,
+            label="Daily Cases",
+            width=0.35,
+            align="edge",
+            color="#00ad93",
+            zorder=1,
+        )
+        ax.bar(
+            x,
+            daily_deaths,
+            label="Daily Deaths",
+            width=-0.35,
+            align="edge",
+            color="#e60000",
+            zorder=1,
+        )
 
-            ax.spines["top"].set_visible(False)
-            ax.spines["right"].set_visible(False)
-            ax.yaxis.set_ticks_position("left")
-            ax.xaxis.set_ticks_position("bottom")
-            legend = ax.legend(frameon=False)
+        ax.plot(x, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2)
+        ax.plot(x, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
+        ax.scatter(x, cum_deaths, color="#e60000", s=20, zorder=3)
+        ax.scatter(x, cum_cases, color="#00ad93", s=20, zorder=3)
+        ax.text(
+            x[-1] + datetime.timedelta(days=2),
+            cum_deaths[-1],
+            str(cum_deaths[-1]) + " deaths",
+        )
+        ax.text(
+            x[-1] + datetime.timedelta(days=2),
+            cum_cases[-1],
+            str(cum_cases[-1]) + " cases",
+        )
 
-            fig.autofmt_xdate()
-            fig.tight_layout()
+        graph_id = cum_cases + cum_deaths
 
-            plt.show()
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.yaxis.set_ticks_position("left")
+        ax.xaxis.set_ticks_position("bottom")
+        legend = ax.legend(frameon=False)
 
-            image = BytesIO()
-            fig.savefig(image, format="png", transparent=True)
-            image.seek(0)
+        fig.autofmt_xdate()
+        fig.tight_layout()
 
-            return image, graph_id
+        plt.show()
+
+        image = BytesIO()
+        fig.savefig(image, format="png", transparent=True)
+        image.seek(0)
+
+        return image, graph_id
 
     async def upload_image(self, file_data, graph_id=None):
         if self.last_graph_id == graph_id:

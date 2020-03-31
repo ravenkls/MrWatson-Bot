@@ -19,6 +19,7 @@ asyncpg = "*"
 psutil = "*"
 googletrans = "*"
 humanize = "*"
+numpy = "*"
 
 [requires]
 python_version = "3.8"
