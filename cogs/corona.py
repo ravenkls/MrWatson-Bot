@@ -231,7 +231,7 @@ class Coronavirus(commands.Cog):
 
                 cum_cases = data[1]
                 pred = self.next_day_prediction(cum_cases)
-                embed.add_field(name="Tomorrow's Predicted Increase", value=pred)
+                embed.add_field(name="Predicted Increase", value=pred)
 
                 graph, graph_id = await self.get_uk_corona_graph(*data)
                 graph_image_data = base64.b64encode(graph.getvalue()).decode()
