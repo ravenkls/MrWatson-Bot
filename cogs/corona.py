@@ -2,7 +2,6 @@ import asyncio
 import base64
 import datetime
 import logging
-from functools import lru_cache
 from io import BytesIO
 from urllib.parse import urljoin
 
@@ -100,6 +99,8 @@ class TwitterAPI:
 class Coronavirus(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.last_graph = None
+        self.last_graph_id = None
         self.check_announcements.start()
         self.twitter_api = TwitterAPI(TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET)
         self.logger = logging.getLogger(__name__)
@@ -217,9 +218,9 @@ class Coronavirus(commands.Cog):
                 )
                 embed.set_footer(text="Data sourced from Worldometers and GOV.UK")
 
-                graph = await self.get_uk_corona_graph()
+                graph, graph_id = await self.get_uk_corona_graph()
                 graph_image_data = base64.b64encode(graph.getvalue()).decode()
-                url = await self.upload_image(graph)
+                url = await self.upload_image(graph, graph_id=graph_id)
                 embed.set_image(url=url)
 
                 await ctx.send(embed=embed)
@@ -315,6 +316,8 @@ class Coronavirus(commands.Cog):
                 str(cum_cases[-1]) + " cases",
             )
 
+            graph_id = cum_cases + cum_deaths
+
             ax.spines["top"].set_visible(False)
             ax.spines["right"].set_visible(False)
             ax.yaxis.set_ticks_position("left")
@@ -330,10 +333,12 @@ class Coronavirus(commands.Cog):
             fig.savefig(image, format="png", transparent=True)
             image.seek(0)
 
-            return image
+            return image, graph_id
 
-    @lru_cache(maxsize=5)
-    async def upload_image(self, file_data):
+    async def upload_image(self, file_data, graph_id=None):
+        if self.last_graph_id == graph_id:
+            return self.last_graph
+
         async with aiohttp.ClientSession() as session:
             headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
             data = {"image": file_data}
@@ -342,6 +347,8 @@ class Coronavirus(commands.Cog):
             )
             response_json = await response.json()
             if response_json["success"]:
+                self.last_graph_id = graph_id
+                self.last_graph = response_json["data"]["link"]
                 return response_json["data"]["link"]
 
 
