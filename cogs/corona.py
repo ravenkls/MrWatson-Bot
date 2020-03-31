@@ -220,7 +220,6 @@ class Coronavirus(commands.Cog):
 
             if country == "UK":
                 embed.colour = 0x1D70B8
-                embed.set_thumbnail(url="https://i.imgur.com/nMDujhO.png")
                 embed.set_author(
                     name="GOV.UK",
                     url="https://www.gov.uk/guidance/coronavirus-covid-19-information-for-the-public",
@@ -265,10 +264,10 @@ class Coronavirus(commands.Cog):
 
         increase = pred - cases[-1]
 
-        if pred >= 1:
-            return "+" + str(int(pred))
+        if increase >= 1:
+            return "+" + str(int(increase))
         else:
-            return str(int(pred))
+            return str(int(increase))
 
     async def get_uk_corona_stats(self):
         async with aiohttp.ClientSession() as session:
