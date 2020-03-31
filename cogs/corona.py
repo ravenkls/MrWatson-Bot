@@ -290,7 +290,7 @@ class Coronavirus(commands.Cog):
             ) as r:
                 data = await r.json(content_type="text/plain")
 
-            x = [
+            dates = [
                 datetime.date.fromtimestamp(f["attributes"]["DateVal"] / 1000)
                 for f in data["features"]
             ]
@@ -314,10 +314,10 @@ class Coronavirus(commands.Cog):
                 for f in data["features"]
             ]
 
-        return cum_cases, cum_deaths, daily_cases, daily_deaths
+        return dates, cum_cases, cum_deaths, daily_cases, daily_deaths
 
     async def get_uk_corona_graph(
-        self, cum_cases, cum_deaths, daily_cases, daily_deaths
+        self, dates, cum_cases, cum_deaths, daily_cases, daily_deaths
     ):
 
         fig = plt.figure()
@@ -327,7 +327,7 @@ class Coronavirus(commands.Cog):
         ax.set_title("UK Cases and Deaths")
 
         ax.bar(
-            x,
+            dates,
             daily_cases,
             label="Daily Cases",
             width=0.35,
@@ -336,7 +336,7 @@ class Coronavirus(commands.Cog):
             zorder=1,
         )
         ax.bar(
-            x,
+            dates,
             daily_deaths,
             label="Daily Deaths",
             width=-0.35,
@@ -345,17 +345,17 @@ class Coronavirus(commands.Cog):
             zorder=1,
         )
 
-        ax.plot(x, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2)
-        ax.plot(x, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
-        ax.scatter(x, cum_deaths, color="#e60000", s=20, zorder=3)
-        ax.scatter(x, cum_cases, color="#00ad93", s=20, zorder=3)
+        ax.plot(dates, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
+        ax.plot(dates, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2)
+        ax.scatter(dates, cum_deaths, color="#e60000", s=20, zorder=3)
+        ax.scatter(dates, cum_cases, color="#00ad93", s=20, zorder=3)
         ax.text(
-            x[-1] + datetime.timedelta(days=2),
+            dates[-1] + datetime.timedelta(days=2),
             cum_deaths[-1],
             str(cum_deaths[-1]) + " deaths",
         )
         ax.text(
-            x[-1] + datetime.timedelta(days=2),
+            dates[-1] + datetime.timedelta(days=2),
             cum_cases[-1],
             str(cum_cases[-1]) + " cases",
         )
