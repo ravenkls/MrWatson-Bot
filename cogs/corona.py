@@ -230,7 +230,7 @@ class Coronavirus(commands.Cog):
 
                 data = await self.get_uk_corona_stats()
 
-                cum_cases = data[0]
+                cum_cases = data[1]
                 pred = self.next_day_prediction(cum_cases)
                 embed.add_field(name="Tomorrow's Predicted Increase", value=pred)
 
