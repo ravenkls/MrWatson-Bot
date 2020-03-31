@@ -296,14 +296,23 @@ class Coronavirus(commands.Cog):
                 for f in data["features"]
             ]
 
-            cum_cases = [
-                f["attributes"]["CumCases"] if f["attributes"]["CumCases"] else 0
-                for f in data["features"]
-            ]
-            cum_deaths = [
-                f["attributes"]["CumDeaths"] if f["attributes"]["CumDeaths"] else 0
-                for f in data["features"]
-            ]
+            cum_deaths = []
+            cum_cases = []
+            for f in data["features"]:
+                if f["attributes"]["CumDeaths"]:
+                    cum_deaths.append(f["attributes"]["CumDeaths"])
+                elif len(cum_deaths):
+                    cum_deaths.append(cum_deaths[-1])
+                else:
+                    cum_deaths.append(0)
+
+                if f["attributes"]["CumCases"]:
+                    cum_cases.append(f["attributes"]["CumCases"])
+                elif len(cum_deaths):
+                    cum_cases.append(cum_cases[-1])
+                else:
+                    cum_cases.append(0)
+
             daily_cases = [
                 f["attributes"]["CMODateCount"]
                 if f["attributes"]["CMODateCount"]
