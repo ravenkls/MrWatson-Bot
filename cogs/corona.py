@@ -321,6 +321,8 @@ class Coronavirus(commands.Cog):
         self, dates, cum_cases, cum_deaths, daily_cases, daily_deaths
     ):
 
+        graph_id = cum_cases + cum_deaths
+
         fig, axes = plt.subplots(2)
 
         ax1, ax2 = axes
