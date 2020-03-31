@@ -320,14 +320,14 @@ class Coronavirus(commands.Cog):
         self, dates, cum_cases, cum_deaths, daily_cases, daily_deaths
     ):
 
-        fig = plt.figure()
+        fig, axes = plt.subplots(2)
 
-        ax = fig.add_subplot(111)
+        ax1, ax2 = axes
 
-        ax.set_title("UK Cases and Deaths")
+        ax1.set_title("UK Cases and Deaths (Linear)")
 
-        ax.bar(
-            dates,
+        ax1.bar(
+            x,
             daily_cases,
             label="Daily Cases",
             width=0.35,
@@ -335,8 +335,8 @@ class Coronavirus(commands.Cog):
             color="#00ad93",
             zorder=1,
         )
-        ax.bar(
-            dates,
+        ax1.bar(
+            x,
             daily_deaths,
             label="Daily Deaths",
             width=-0.35,
@@ -345,33 +345,54 @@ class Coronavirus(commands.Cog):
             zorder=1,
         )
 
-        ax.plot(dates, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
-        ax.plot(dates, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2)
-        ax.scatter(dates, cum_deaths, color="#e60000", s=20, zorder=3)
-        ax.scatter(dates, cum_cases, color="#00ad93", s=20, zorder=3)
-        ax.text(
-            dates[-1] + datetime.timedelta(days=2),
+        ax1.plot(x, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2)
+        ax1.plot(x, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
+        ax1.scatter(x, cum_deaths, color="#e60000", s=5, zorder=3)
+        ax1.scatter(x, cum_cases, color="#00ad93", s=5, zorder=3)
+        ax1.text(
+            x[-1] + datetime.timedelta(days=2),
             cum_deaths[-1],
             str(cum_deaths[-1]) + " deaths",
         )
-        ax.text(
-            dates[-1] + datetime.timedelta(days=2),
+        ax1.text(
+            x[-1] + datetime.timedelta(days=2),
             cum_cases[-1],
             str(cum_cases[-1]) + " cases",
         )
 
-        graph_id = cum_cases + cum_deaths
+        ax1.spines["top"].set_visible(False)
+        ax1.spines["right"].set_visible(False)
+        ax1.yaxis.set_ticks_position("left")
+        ax1.xaxis.set_ticks_position("bottom")
 
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-        ax.yaxis.set_ticks_position("left")
-        ax.xaxis.set_ticks_position("bottom")
-        legend = ax.legend(frameon=False)
+        ax1.legend(frameon=False)
+
+        ax2.set_title("UK Cases and Deaths (Logarithmic)")
+        ax2.set_yscale("log")
+        ax2.plot(x, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2)
+        ax2.plot(x, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
+        ax2.scatter(x, cum_deaths, color="#e60000", s=5, zorder=3)
+        ax2.scatter(x, cum_cases, color="#00ad93", s=5, zorder=3)
+        ax2.text(
+            x[-1] + datetime.timedelta(days=2),
+            cum_deaths[-1],
+            str(cum_deaths[-1]) + " deaths",
+        )
+        ax2.text(
+            x[-1] + datetime.timedelta(days=2),
+            cum_cases[-1],
+            str(cum_cases[-1]) + " cases",
+        )
+
+        ax2.spines["top"].set_visible(False)
+        ax2.spines["right"].set_visible(False)
+        ax2.yaxis.set_ticks_position("left")
+        ax2.xaxis.set_ticks_position("bottom")
+
+        ax2.legend(frameon=False)
 
         fig.autofmt_xdate()
         fig.tight_layout()
-
-        plt.show()
 
         image = BytesIO()
         fig.savefig(image, format="png", transparent=True)
