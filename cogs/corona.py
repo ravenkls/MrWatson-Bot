@@ -174,13 +174,23 @@ class Coronavirus(commands.Cog):
             if not new_cases:
                 new_cases = "0"
             if not active_cases:
-                new_cases = "0"
+                active_cases = "0"
             if not cases:
                 cases = "0"
+            if not new_deaths:
+                new_deaths = "0"
             if not deaths:
                 deaths = "0"
             if not recovered:
                 recovered = "0"
+            if not serious_critical:
+                serious_critical = "0"
+            if not permillion:
+                permillion = "0"
+            if not deathmillion:
+                deathmillion = "0"
+            if not first_case_date:
+                first_case_date = "0"
             if country == "Total:":
                 country = "Worldwide"
 
