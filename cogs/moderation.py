@@ -126,7 +126,7 @@ class Moderation(commands.Cog):
 
         await self.bot.database.add_warning(member, ctx.author, reason)
         await ctx.send(f"⚠️ {member.mention} has been warned. Reason: {reason}")
-        await member.send(f"⚠️ You have been warned by {ctx.author}. Reason: {reason}")
+        await member.send(f"⚠️ You have been warned. Reason: {reason}")
 
         embed = discord.Embed(
             colour=EMBED_ACCENT_COLOUR,
