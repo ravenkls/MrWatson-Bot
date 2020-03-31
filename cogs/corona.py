@@ -328,7 +328,7 @@ class Coronavirus(commands.Cog):
         ax1.set_title("UK Cases and Deaths (Linear)")
 
         ax1.bar(
-            x,
+            dates,
             daily_cases,
             label="Daily Cases",
             width=0.35,
@@ -337,7 +337,7 @@ class Coronavirus(commands.Cog):
             zorder=1,
         )
         ax1.bar(
-            x,
+            dates,
             daily_deaths,
             label="Daily Deaths",
             width=-0.35,
@@ -346,17 +346,19 @@ class Coronavirus(commands.Cog):
             zorder=1,
         )
 
-        ax1.plot(x, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2)
-        ax1.plot(x, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
-        ax1.scatter(x, cum_deaths, color="#e60000", s=5, zorder=3)
-        ax1.scatter(x, cum_cases, color="#00ad93", s=5, zorder=3)
+        ax1.plot(
+            dates, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2
+        )
+        ax1.plot(dates, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
+        ax1.scatter(dates, cum_deaths, color="#e60000", s=5, zorder=3)
+        ax1.scatter(dates, cum_cases, color="#00ad93", s=5, zorder=3)
         ax1.text(
-            x[-1] + datetime.timedelta(days=2),
+            dates[-1] + datetime.timedelta(days=2),
             cum_deaths[-1],
             str(cum_deaths[-1]) + " deaths",
         )
         ax1.text(
-            x[-1] + datetime.timedelta(days=2),
+            dates[-1] + datetime.timedelta(days=2),
             cum_cases[-1],
             str(cum_cases[-1]) + " cases",
         )
@@ -370,17 +372,19 @@ class Coronavirus(commands.Cog):
 
         ax2.set_title("UK Cases and Deaths (Logarithmic)")
         ax2.set_yscale("log")
-        ax2.plot(x, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2)
-        ax2.plot(x, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
-        ax2.scatter(x, cum_deaths, color="#e60000", s=5, zorder=3)
-        ax2.scatter(x, cum_cases, color="#00ad93", s=5, zorder=3)
+        ax2.plot(
+            dates, cum_deaths, label="Cumulative Deaths", color="#e60000", zorder=2
+        )
+        ax2.plot(dates, cum_cases, label="Cumulative Cases", color="#00ad93", zorder=2)
+        ax2.scatter(dates, cum_deaths, color="#e60000", s=5, zorder=3)
+        ax2.scatter(dates, cum_cases, color="#00ad93", s=5, zorder=3)
         ax2.text(
-            x[-1] + datetime.timedelta(days=2),
+            dates[-1] + datetime.timedelta(days=2),
             cum_deaths[-1],
             str(cum_deaths[-1]) + " deaths",
         )
         ax2.text(
-            x[-1] + datetime.timedelta(days=2),
+            dates[-1] + datetime.timedelta(days=2),
             cum_cases[-1],
             str(cum_cases[-1]) + " cases",
         )
