@@ -122,7 +122,7 @@ class Coronavirus(commands.Cog):
                     channel = self.bot.get_channel(
                         int(self.bot.database.settings["corona_channel"])
                     )
-                    role = channel.guild.get_role(688844587288100874)
+                    role = channel.guild.get_role(694964140095176805)
                     await channel.send(f"{role.mention} {tweet.url()}")
 
     @commands.command()
