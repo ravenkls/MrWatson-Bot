@@ -108,6 +108,32 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
+    @commands.check(is_admin)
+    async def prune(self, ctx):
+        """Prunes inactive members who have the No Year Group role."""
+        no_year_group = ctx.guild.get_role(668489111660658689)
+        if not no_year_group:
+            return
+
+        await ctx.send("Checking for inactive members...")
+
+        members = no_year_group.members
+        m_roles = [m.roles for m in members]
+        for m, r in zip(members, m_roles):
+            await m.remove_roles(*r)
+
+        n = await ctx.guild.prune_members(
+            days=7, reason=f"Inactive members removed by {ctx.author}"
+        )
+
+        for m, r in zip(members, m_roles):
+            if m in ctx.guild.members:
+                await m.add_roles(*r)
+
+        await ctx.send(f"{n} inactive members have been kicked")
+
+    @commands.command()
+    @commands.guild_only()
     @commands.check(is_mod)
     async def warn(self, ctx, member: discord.Member, *, reason: str = "None"):
         """Warn a member of the server."""
@@ -122,7 +148,7 @@ class Moderation(commands.Cog):
         elif current_amount == 9:
             reason += " (10TH WARNING)"
         elif current_amount == 14:
-            reason += " (11TH WARNING)"
+            reason += " (15TH WARNING)"
 
         await self.bot.database.add_warning(member, ctx.author, reason)
         await ctx.send(f"⚠️ {member.mention} has been warned. Reason: {reason}")
