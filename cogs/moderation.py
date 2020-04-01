@@ -120,15 +120,17 @@ class Moderation(commands.Cog):
         members = no_year_group.members
         m_roles = [m.roles for m in members]
         for m, r in zip(members, m_roles):
-            await m.remove_roles(*r)
+            roles = r[1:]
+            await m.remove_roles(*roles)
 
         n = await ctx.guild.prune_members(
             days=7, reason=f"Inactive members removed by {ctx.author}"
         )
 
         for m, r in zip(members, m_roles):
+            roles = r[1:]
             if m in ctx.guild.members:
-                await m.add_roles(*r)
+                await m.add_roles(*roles)
 
         await ctx.send(f"{n} inactive members have been kicked")
 
