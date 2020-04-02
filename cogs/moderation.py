@@ -72,19 +72,23 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    async def shiftmemberroles(self, ctx, old: discord.Role, new: discord.Role):
-        """Moves all members in a role to another."""
+    async def shiftmemberroles(self, ctx, old: discord.Role, new: discord.Role, flag="+-"):
+        """Moves all members in a role to another.
+        By default, removes the old role. If the "+" flag is passed, this is not removed."""
         msg = await ctx.send("(0%) Shifting member roles...")
         total = len(old.members)
         percent = 0
         for n, member in enumerate(old.members):
-            await member.add_roles(new)
-            await member.remove_roles(old)
+            if flag.contains("+"):
+                await member.add_roles(new)
+            if flag.contains("-"):
+                await member.remove_roles(old)
             p = int((n / total) * 10) * 10
             if p != percent:
                 percent = p
                 await msg.edit(content=f"({percent}%) Shifting member roles...")
         await msg.edit(content=f"(100%) Member roles were shifted")
+    
 
     # @commands.command(hidden=True)
     # @commands.guild_only()
