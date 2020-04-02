@@ -71,7 +71,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.is_owner()
+    @commands.check(is_admin)
     async def shiftmemberroles(self, ctx, old: discord.Role, new: discord.Role, flag="+-"):
         """Moves all members in a role to another.
         By default, removes the old role. If the "+" flag is passed, this is not removed."""
