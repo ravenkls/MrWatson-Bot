@@ -79,9 +79,9 @@ class Moderation(commands.Cog):
         total = len(old.members)
         percent = 0
         for n, member in enumerate(old.members):
-            if flag.contains("+"):
+            if "+" in flag:
                 await member.add_roles(new)
-            if flag.contains("-"):
+            if "-" in flag:
                 await member.remove_roles(old)
             p = int((n / total) * 10) * 10
             if p != percent:
