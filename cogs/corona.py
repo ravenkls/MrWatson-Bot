@@ -170,7 +170,6 @@ class Coronavirus(commands.Cog):
                 serious_critical,
                 permillion,
                 deathmillion,
-                first_case_date,
             ) = [i.text.strip() for i in country_row[0].find_all("td")]
 
             if not new_cases:
@@ -191,8 +190,6 @@ class Coronavirus(commands.Cog):
                 permillion = "0"
             if not deathmillion:
                 deathmillion = "0"
-            if not first_case_date:
-                first_case_date = "0"
             if country == "Total:":
                 country = "Worldwide"
 
