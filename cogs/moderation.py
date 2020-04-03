@@ -594,6 +594,9 @@ class Moderation(commands.Cog):
         if ctx.author.top_role <= member.top_role:
             await ctx.send("You cannot jail this user.")
             return
+        if ctx.author == member:
+            await ctx.send("You probably shouldn't be trying to jail yourself.")
+            return
                                
         role = self.bot.database.settings.get("jail_role_id")
         if not role:
