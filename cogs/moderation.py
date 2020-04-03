@@ -76,11 +76,11 @@ class Moderation(commands.Cog):
         """Moves all members that have at least one of the specified roles role to the other.
         By default, removes the old role. If the "+" flag is passed, this is not removed."""
         old_members = []
-            for i in range(len(old)):
-                role_members = old[i].members
-                for member in role_members:
-                    if member not in old_members:
-                        old_members.append(member)
+        for i in range(len(old)):
+            role_members = old[i].members
+            for member in role_members:
+                if member not in old_members:
+                    old_members.append(member)
         msg = await ctx.send("(0%) Shifting member roles...")
         total = len(old_members)
         percent = 0
