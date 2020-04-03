@@ -72,17 +72,23 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.check(is_admin)
-    async def shiftmemberroles(self, ctx, old: discord.Role, new: discord.Role, flag="+-"):
-        """Moves all members in a role to another.
+    async def shiftmemberroles(self, ctx, old: commands.Greedy[discord.Role], flags: str, new: commands.Greedy[discord.Role]):
+        """Moves all members that have at least one of the specified roles role to the other.
         By default, removes the old role. If the "+" flag is passed, this is not removed."""
+        old_members = []
+        for i in range(len(old)):
+            role_members = old[i].members
+            for member in role_members:
+                if member not in old_members:
+                    old_members.append(member)
         msg = await ctx.send("(0%) Shifting member roles...")
-        total = len(old.members)
+        total = len(old_members)
         percent = 0
-        for n, member in enumerate(old.members):
-            if "+" in flag:
-                await member.add_roles(new)
-            if "-" in flag:
-                await member.remove_roles(old)
+        for n, member in enumerate(old_members):
+            if "+" in flags:
+                await member.add_roles(*new)
+            if "-" in flags:
+                await member.remove_roles(*old)
             p = int((n / total) * 10) * 10
             if p != percent:
                 percent = p
