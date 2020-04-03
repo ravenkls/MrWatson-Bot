@@ -46,6 +46,17 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     async def adminrole(self, ctx, *, role: discord.Role = None):
         await self.setrole(ctx, role, "admin_role")
+    
+    @commands.guild_only()
+    @commands.check(is_admin)
+    @commands.command()
+    async def cleanup_roles(self, ctx):
+        await ctx.send("Cleaning up roles...")
+        for role in ctx.guild.roles:
+            if len(role.members) == 0 and "Helper" in role.name:
+                print(f"Deleting Role: {role.name}")
+                await role.delete()
+        await ctx.send("Finished")
 
     @commands.command()
     @commands.check(is_admin)
