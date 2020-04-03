@@ -379,7 +379,7 @@ class General(commands.Cog):
         raise NotImplementedError
 
     @commands.command()
-    async def list(self, ctx, *, role: discord.Greedy[discord.Role]):
+    async def list(self, ctx, *, role: commands.Greedy[discord.Role]):
         """List all the members of a role."""
         matched_roles = [role]
         embed = discord.Embed(
