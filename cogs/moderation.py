@@ -591,6 +591,10 @@ class Moderation(commands.Cog):
     @commands.check(is_mod)
     async def jail(self, ctx, *, member: discord.Member):
         """Send a member of the server to jail."""
+        if ctx.author.top_role <= member.top_role:
+            await ctx.send("You cannot jail this user.")
+            return
+                               
         role = self.bot.database.settings.get("jail_role_id")
         if not role:
             await ctx.send(
