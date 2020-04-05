@@ -46,6 +46,17 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     async def adminrole(self, ctx, *, role: discord.Role = None):
         await self.setrole(ctx, role, "admin_role")
+    
+    @commands.guild_only()
+    @commands.check(is_admin)
+    @commands.command()
+    async def cleanup_roles(self, ctx):
+        await ctx.send("Cleaning up roles...")
+        for role in ctx.guild.roles:
+            if len(role.members) == 0 and "Helper" in role.name:
+                print(f"Deleting Role: {role.name}")
+                await role.delete()
+        await ctx.send("Finished")
 
     @commands.command()
     @commands.check(is_admin)
@@ -72,17 +83,23 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.check(is_admin)
-    async def shiftmemberroles(self, ctx, old: discord.Role, new: discord.Role, flag="+-"):
-        """Moves all members in a role to another.
+    async def shiftmemberroles(self, ctx, old: commands.Greedy[discord.Role], flags: str, new: commands.Greedy[discord.Role]):
+        """Moves all members that have at least one of the specified roles role to the other.
         By default, removes the old role. If the "+" flag is passed, this is not removed."""
+        old_members = []
+        for i in range(len(old)):
+            role_members = old[i].members
+            for member in role_members:
+                if member not in old_members:
+                    old_members.append(member)
         msg = await ctx.send("(0%) Shifting member roles...")
-        total = len(old.members)
+        total = len(old_members)
         percent = 0
-        for n, member in enumerate(old.members):
-            if flag.contains("+"):
-                await member.add_roles(new)
-            if flag.contains("-"):
-                await member.remove_roles(old)
+        for n, member in enumerate(old_members):
+            if "+" in flags:
+                await member.add_roles(*new)
+            if "-" in flags:
+                await member.remove_roles(*old)
             p = int((n / total) * 10) * 10
             if p != percent:
                 percent = p
@@ -591,6 +608,10 @@ class Moderation(commands.Cog):
     @commands.check(is_mod)
     async def jail(self, ctx, *, member: discord.Member):
         """Send a member of the server to jail."""
+        if ctx.author.top_role <= member.top_role:
+            await ctx.send("You cannot jail this user.")
+            return
+                               
         role = self.bot.database.settings.get("jail_role_id")
         if not role:
             await ctx.send(

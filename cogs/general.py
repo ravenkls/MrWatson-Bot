@@ -379,44 +379,24 @@ class General(commands.Cog):
         raise NotImplementedError
 
     @commands.command()
-    async def list(self, ctx, *, role):
+    async def list(self, ctx, *, role: commands.Greedy[discord.Role]):
         """List all the members of a role."""
-        names = [r.name for r in ctx.guild.roles][1:]
-        roles = [r for r in ctx.guild.roles][1:]
-        name, match = process.extractOne(role, names)
-        if match >= 75:
-            matched_role = roles[names.index(name)]
-            matched_roles = {matched_role}
-
-            channels = await self.bot.database.conn.fetch(
-                "SELECT channel_id FROM helper_roles WHERE role_id=$1", matched_role.id
-            )
-            for c in channels:
-                other_roles = await self.bot.database.conn.fetch(
-                    "SELECT role_id FROM helper_roles WHERE channel_id=$1 AND role_id != $2",
-                    c["channel_id"],
-                    matched_role.id,
+        matched_roles = [role]
+        embed = discord.Embed(
+            title=f'Query for members with role "{role}"',
+            colour=EMBED_ACCENT_COLOUR,
+        )
+        for m_role in matched_roles:
+            if m_role.members:
+                embed.add_field(
+                    name=m_role.name,
+                    value="\n".join([m.mention for m in m_role.members]),
+                    inline=False,
                 )
-                for o in other_roles:
-                    matched_roles.add(ctx.guild.get_role(o["role_id"]))
-
-            embed = discord.Embed(
-                title=f'Query for members with role "{role}"',
-                colour=EMBED_ACCENT_COLOUR,
-            )
-            for m_role in matched_roles:
-                if m_role.members:
-                    embed.add_field(
-                        name=m_role.name,
-                        value="\n".join([m.mention for m in m_role.members]),
-                        inline=False,
-                    )
-            embed.set_footer(
-                text=f"{sum(len(m.members) for m in matched_roles)} members in total"
-            )
-            await ctx.send(embed=embed)
-        else:
-            await ctx.send("I could not find any roles matching your query.")
+        embed.set_footer(
+            text=f"{sum(len(m.members) for m in matched_roles)} members in total"
+        )
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def userinfo(self, ctx, *, member: discord.Member = None):
